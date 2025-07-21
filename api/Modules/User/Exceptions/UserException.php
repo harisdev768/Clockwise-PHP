@@ -32,12 +32,33 @@ class UserException extends Exception
 
     public static function missingCredentials(): self
     {
-        return new self("Missing Credentials", 422);
+        return new self("All fields are required.", 422);
     }
 
+    public static function emailFormat(): self
+    {
+        return new self("Invalid email format.", 422);
+    }
+    public static function emailExists(): self
+    {
+        return new self("Email Already Exist.", 422);
+    }
+    public static function userExists(): self
+    {
+        return new self("Username Already Exist. ", 422);
+    }
+    public static function passwordFormat(): self
+    {
+        return new self("Password must be at least 6 characters.", 422);
+    }
     public static function unauthorized(): self
     {
         return new self("Invalid Credentials", 401);
+    }
+
+    public static function userNotAdded(): self
+    {
+        return new self("Try Again Later! Something went wrong.", 422);
     }
 
 

@@ -9,6 +9,18 @@ class User
     private string $username;
     private string $passwordHash;
 
+    public function userExists(): bool{ //
+        if( empty($this->firstName) ||
+            empty($this->lastName) ||
+            empty($this->email) ||
+            empty($this->username) ||
+            empty($this->passwordHash) ) {
+            return false;
+        } else{
+            return true;
+        }
+    }
+
     public function setFirstName(string $name): void { $this->firstName = $name; }
     public function setLastName(string $name): void { $this->lastName = $name; }
     public function setEmail(string $email): void { $this->email = $email; }

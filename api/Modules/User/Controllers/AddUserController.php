@@ -13,18 +13,8 @@ class AddUserController
         $this->useCase = $useCase;
     }
 
-    public function handle(): void
+    public function handle($data): void
     {
-        header('Content-Type: application/json');
-
-        $input = json_decode(file_get_contents('php://input'), true);
-        $request = new AddUserRequest($input);
-
-        $this->useCase->execute($request);
-
-        echo json_encode([
-            "success" => true,
-            "message" => "User added successfully."
-        ]);
+        $this->useCase->execute(new AddUserRequest($data));
     }
 }

@@ -55,6 +55,8 @@ use App\Core\Exceptions\ApiException;
 use App\Modules\Login\Exceptions\LoginException;
 use App\Modules\Login\Exceptions\TokenException;
 use App\Modules\User\Exceptions\UserException;
+use App\Modules\User\Request\AddUserRequest;
+use App\Modules\User\UseCases\AddUserUseCase;
 
 
 // ==============================
@@ -72,7 +74,7 @@ $container->bind(LoginFactory::class, fn() => new LoginFactory($container));
 $container->bind(ForgotPasswordFactory::class, fn() => new ForgotPasswordFactory($container));
 $container->bind(ResetPasswordFactory::class, fn() => new ResetPasswordFactory($container));
 $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
-$container->bind(AddUserFactory::class, fn() => new LoginFactory($container));
+$container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -91,6 +93,8 @@ function handleLogin()
 {
     $request = Container::getInstance()->get(Request::class);
     $data = $request->all();
+
+    print_r($data);
 
     if (empty($data)) {
         throw LoginException::unauthorized();
@@ -139,6 +143,25 @@ function handleForgotPassword()
         throw ForgotPasswordException::missingEmail();
     }
 
+    if (
+        empty($data['first_name']) ||
+        empty($data['last_name']) ||
+        empty($data['email']) ||
+        empty($data['username']) ||
+        empty($data['password'])
+    ) {
+        throw UserException::missingCredentials();
+    }
+
+
+    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        throw UserException::emailFormat();
+    }
+
+    if (strlen($data['password']) < 6) {
+        throw UserException::passwordFormat();
+    }
+
     Container::getInstance()->get(ForgotPasswordFactory::class)->handler($data);
 }
 
@@ -158,6 +181,8 @@ function handleResetPassword()
 
 function handleAddUser()
 {
-    $controller = AddUserFactory::create();
-    $controller->handle();
+
+    $data = Container::getInstance()->get(Request::class)->all();
+    Container::getInstance()->get(AddUserFactory::class)->handle($data);
+
 }
