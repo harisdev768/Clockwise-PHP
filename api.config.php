@@ -143,25 +143,6 @@ function handleForgotPassword()
         throw ForgotPasswordException::missingEmail();
     }
 
-    if (
-        empty($data['first_name']) ||
-        empty($data['last_name']) ||
-        empty($data['email']) ||
-        empty($data['username']) ||
-        empty($data['password'])
-    ) {
-        throw UserException::missingCredentials();
-    }
-
-
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        throw UserException::emailFormat();
-    }
-
-    if (strlen($data['password']) < 6) {
-        throw UserException::passwordFormat();
-    }
-
     Container::getInstance()->get(ForgotPasswordFactory::class)->handler($data);
 }
 
@@ -183,6 +164,29 @@ function handleAddUser()
 {
 
     $data = Container::getInstance()->get(Request::class)->all();
+
+    if (
+        empty($data['first_name']) ||
+        empty($data['last_name']) ||
+        empty($data['email']) ||
+        empty($data['username']) ||
+        empty($data['password'])
+    ) {
+        throw UserException::missingCredentials();
+    }
+
+
+    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        throw UserException::emailFormat();
+    }
+
+    if (strlen($data['password']) < 6) {
+        throw UserException::passwordFormat();
+    }
+
+
     Container::getInstance()->get(AddUserFactory::class)->handle($data);
+
+
 
 }

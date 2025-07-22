@@ -32,7 +32,6 @@ class UserMapper
         $stmt->execute([$user->getEmail()]);
         if ($stmt->fetchColumn() > 0) {
             throw UserException::emailExists();
-            return false;
         }
         return true;
     }
@@ -43,7 +42,6 @@ class UserMapper
         $stmt->execute([$user->getUsername()]);
         if ($stmt->fetchColumn() > 0) {
             throw UserException::userExists();
-            return false;
         }
         return true;
     }

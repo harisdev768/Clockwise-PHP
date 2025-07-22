@@ -7,26 +7,24 @@ class UserDepartment {
     private int $departmentId;
     private string $departmentName;
 
-    private $departments = array(
-        '1' => 'R&D'
-    );
+    private array $departments = [
+        1 => 'R&D',
+        2 => 'Sales',
+        3 => 'QA',
+        4 => 'Customer Support',
+        5 => 'Finance'
+    ];
 
     public function __construct(int $departmentId){
         $this->departmentId = $departmentId;
-        if($departmentId == 1) {
-            $this->departmentName = "R&D";
-        } elseif($departmentId == 2) {
-            $this->departmentName = "Sales";
-        } elseif($departmentId == 3) {
-            $this->departmentName = "QA";
-        } elseif($departmentId == 4) {
-            $this->departmentName = "Customer Support";
-        } elseif($departmentId == 5) {
-            $this->departmentName = "Finance";
-        }
+        $this->departmentName = $this->departments[$departmentId] ?? 'Unknown';
     }
+
     public function getDepartmentId(): int {
         return $this->departmentId;
     }
-    public function getDepartmentName(): string { return $this->departmentName; }
+
+    public function getDepartmentName(): string {
+        return $this->departmentName;
+    }
 }

@@ -13,13 +13,11 @@ use App\Modules\User\Response\AddUserResponse;
 
 class UserService
 {
-    private $pdo;
     private UserHydrator $hydrator;
     private UserMapper $mapper;
 
     public function __construct(UserHydrator $hydrator, UserMapper $mapper)
     {
-        $this->pdo = DB::getConnection();
         $this->hydrator = $hydrator;
         $this->mapper = $mapper;
     }

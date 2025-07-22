@@ -4,31 +4,30 @@ namespace App\Modules\User\Models;
 
 class UserJobRole {
 
-    private int $JobRoleId;
-    private string $JobRoleName;
+    private int $jobRoleId;
+    private string $jobRoleName;
 
-    public function __construct(int $JobRoleId){
-        $this->JobRoleId = $JobRoleId;
-        if($JobRoleId == 1) {
-            $this->JobRoleName = "Manager";
-        } elseif($JobRoleId == 2) {
-            $this->JobRoleName = "HR";
-        } elseif($JobRoleId == 3) {
-            $this->JobRoleName = "Software Engineer";
-        } elseif($JobRoleId == 4) {
-            $this->JobRoleName = "Product Honor";
-        } elseif($JobRoleId == 5) {
-            $this->JobRoleName = "Intern";
-        } elseif($JobRoleId == 6) {
-            $this->JobRoleName = "SQA";
-        } elseif($JobRoleId == 7) {
-            $this->JobRoleName = "Team Lead";
-        } elseif($JobRoleId == 8) {
-            $this->JobRoleName = "Department Head";
-        }
+    private array $jobRoles = [
+        1 => "Manager",
+        2 => "HR",
+        3 => "Software Engineer",
+        4 => "Product Honor",
+        5 => "Intern",
+        6 => "SQA",
+        7 => "Team Lead",
+        8 => "Department Head"
+    ];
+
+    public function __construct(int $jobRoleId){
+        $this->jobRoleId = $jobRoleId;
+        $this->jobRoleName = $this->jobRoles[$jobRoleId] ?? 'Unknown';
     }
+
     public function getJobRoleId(): int {
-        return $this->JobRoleId;
+        return $this->jobRoleId;
     }
-    public function getJobRoleName(): string { return $this->JobRoleName; }
+
+    public function getJobRoleName(): string {
+        return $this->jobRoleName;
+    }
 }
