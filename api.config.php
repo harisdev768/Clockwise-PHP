@@ -3,60 +3,58 @@
 // ==============================
 // FACTORIES
 // ==============================
-use App\Modules\Login\Factories\LoginFactory;
+use App\Config\Container;
+use App\Core\Exceptions\ApiException;
+use App\Core\Http\Request;
+use App\Core\Http\Response;
+use App\Core\Middleware\AuthMiddleware;
+use App\Modules\ForgotPassword\Exceptions\ForgotPasswordException;
+use App\Modules\ForgotPassword\Exceptions\ResetPasswordException;
 use App\Modules\ForgotPassword\Factories\ForgotPasswordFactory;
 use App\Modules\ForgotPassword\Factories\ResetPasswordFactory;
+use App\Modules\ForgotPassword\Request\ForgotPasswordRequest;
+use App\Modules\Login\Exceptions\LoginException;
+use App\Modules\Login\Exceptions\TokenException;
 use App\Modules\Login\Factories\JWTFactory;
+use App\Modules\Login\Factories\LoginFactory;
+use App\Modules\Login\Models\Mappers\UserMapper;
+use App\Modules\Login\Models\Mappers\UserTokenMapper;
+use App\Modules\Login\Requests\CookieRequest;
+use App\Modules\Login\Requests\LoginRequest;
+use App\Modules\Login\Services\JWTService;
+use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
+use App\Modules\User\Factories\GetUsersFactory;
 
 
 // ==============================
 // CONTAINER
 // ==============================
-use App\Config\Container;
 
 
 // ==============================
 // RESPONSE CLASSES
 // ==============================
-use App\Core\Http\Response;
-use App\Modules\Login\Response\LoginResponse;
 
 
 // ==============================
 // SERVICES
 // ==============================
-use App\Modules\Login\Services\JWTService;
 
 
 // ==============================
 // MAPPERS
 // ==============================
-use App\Modules\Login\Models\Mappers\UserMapper;
-use App\Modules\Login\Models\Mappers\UserTokenMapper;
 
 
 // ==============================
 // REQUESTS
 // ==============================
-use App\Core\Http\Request;
-use App\Modules\Login\Requests\LoginRequest;
-use App\Modules\ForgotPassword\Request\ForgotPasswordRequest;
-use App\Modules\Login\Requests\CookieRequest;
-use App\Modules\ForgotPassword\Request\ResetPasswordRequest;
 
 
 // ==============================
 // EXCEPTIONS
 // ==============================
-use App\Modules\ForgotPassword\Exceptions\ForgotPasswordException;
-use App\Modules\ForgotPassword\Exceptions\ResetPasswordException;
-use App\Core\Exceptions\ApiException;
-use App\Modules\Login\Exceptions\LoginException;
-use App\Modules\Login\Exceptions\TokenException;
-use App\Modules\User\Exceptions\UserException;
-use App\Modules\User\Request\AddUserRequest;
-use App\Modules\User\UseCases\AddUserUseCase;
 
 
 // ==============================
@@ -75,6 +73,7 @@ $container->bind(ForgotPasswordFactory::class, fn() => new ForgotPasswordFactory
 $container->bind(ResetPasswordFactory::class, fn() => new ResetPasswordFactory($container));
 $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
+$container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container) );
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -87,6 +86,10 @@ $container->bind(ApiException::class, fn() => new ApiException());
 $container->bind(LoginRequest::class, fn() => new Request());
 $container->bind(CookieRequest::class, fn() => new CookieRequest());
 $container->bind(ForgotPasswordRequest::class, fn() => new ForgotPasswordRequest());
+
+// Auth Middleware
+
+$container->bind(AuthMiddleware::class, fn() => new AuthMiddleware());
 
 // Middleware-style functions
 function handleLogin()
@@ -123,7 +126,6 @@ function handleLogout()
 
 function handleMe()
 {
-    $token = Container::getInstance()->get(CookieRequest::class)->getCookie();
 
     $tokenString = Container::getInstance()->get(CookieRequest::class)->getCookie();
 
@@ -162,31 +164,52 @@ function handleResetPassword()
 
 function handleAddUser()
 {
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
-    $data = Container::getInstance()->get(Request::class)->all();
+    if( $middleware->handle('add_user') ) {
 
-    if (
-        empty($data['first_name']) ||
-        empty($data['last_name']) ||
-        empty($data['email']) ||
-        empty($data['username']) ||
-        empty($data['password'])
-    ) {
-        throw UserException::missingCredentials();
+        $container = Container::getInstance();
+        $data = $container->get(Request::class)->all();
+
+        if (
+            empty($data['first_name']) ||
+            empty($data['last_name']) ||
+            empty($data['email']) ||
+            empty($data['username']) ||
+            empty($data['password'])
+        ) {
+            throw UserException::missingCredentials();
+        }
+
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            throw UserException::emailFormat();
+        }
+
+        if (strlen($data['password']) < 6) {
+            throw UserException::passwordFormat();
+        }
+
+        // Call the factory
+        $container->get(AddUserFactory::class)->handle($data);
+    } else{
+        throw UserException::notAllowed();
     }
+}
 
+function handleGetUsers()
+{
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        throw UserException::emailFormat();
+    if ($middleware->handle('get_users')) {
+
+        $container = Container::getInstance();
+        $response = $container->get(GetUsersFactory::class)->handle();
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
+
+    } else {
+        throw UserException::notAllowed();
     }
-
-    if (strlen($data['password']) < 6) {
-        throw UserException::passwordFormat();
-    }
-
-
-    Container::getInstance()->get(AddUserFactory::class)->handle($data);
-
-
 
 }

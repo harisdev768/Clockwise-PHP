@@ -36,4 +36,10 @@ class UserService
         }
 
     }
+
+    public function getAllUsers()
+    {
+        return $this->mapper->getUser();
+    }
+
 }

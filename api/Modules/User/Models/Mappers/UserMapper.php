@@ -56,4 +56,16 @@ class UserMapper
 
         return $user;
     }
+
+    public function getUser(){
+
+        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at FROM users");
+        $stmt->execute();
+        $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        return [
+            "success" => true,
+            "data" => $users,
+        ];
+    }
 }

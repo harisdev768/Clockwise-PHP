@@ -61,5 +61,12 @@ class UserException extends Exception
         return new self("Try Again Later! Something went wrong.", 422);
     }
 
+    public static function notAllowed(): self{
+        return new self("Not allowed.", 422);
+    }
+
+    public static function roleNotFound(): self{
+        return new self("Role not found.", 422);
+    }
 
 }

@@ -6,6 +6,8 @@ class CookieRequest{
 
     public function __construct(){
         $this->cookie = $_COOKIE['jwt'] ?? null;
+
+
     }
 
     public function getCookie(){
