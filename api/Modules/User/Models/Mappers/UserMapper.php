@@ -23,8 +23,10 @@ class UserMapper
             $user->getEmail(),
             $user->getUsername(),
             password_hash($user->getPasswordHash(), PASSWORD_BCRYPT),
+            $user->getCreatedBy()
         ];
     }
+
     public function checkEmail(User $user): bool{
 
         // Check for duplicate email
@@ -48,8 +50,8 @@ class UserMapper
     public function addUser(User $user){
 
         $stmt = $this->pdo->prepare("
-            INSERT INTO users (first_name, last_name, email, username, password_hash)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users (first_name, last_name, email, username, password_hash, created_by)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute(self::toDatabase($user));
@@ -59,13 +61,17 @@ class UserMapper
 
     public function getUser(){
 
-        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at FROM users");
+        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at, status, created_by FROM users");
         $stmt->execute();
         $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return [
-            "success" => true,
-            "data" => $users,
-        ];
+        return $users;
+    }
+
+    public function findByEmail(User $user): ?User {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$user->getEmail()]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : $user ;
     }
 }

@@ -97,8 +97,6 @@ function handleLogin()
     $request = Container::getInstance()->get(Request::class);
     $data = $request->all();
 
-    print_r($data);
-
     if (empty($data)) {
         throw LoginException::unauthorized();
     }
@@ -164,6 +162,8 @@ function handleResetPassword()
 
 function handleAddUser()
 {
+
+
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if( $middleware->handle('add_user') ) {
@@ -204,12 +204,20 @@ function handleGetUsers()
 
         $container = Container::getInstance();
         $response = $container->get(GetUsersFactory::class)->handle();
-
-        header('Content-Type: application/json');
-        echo json_encode($response);
-
     } else {
         throw UserException::notAllowed();
     }
 
+}
+
+function handleEditUser(){
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
+    if ($middleware->handle('edit_user')) {
+        $container = Container::getInstance();
+        $data = $container->get(Request::class)->all();
+        print_r($data);
+
+    }else{
+        throw UserException::notAllowed();
+    }
 }

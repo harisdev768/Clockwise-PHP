@@ -69,4 +69,8 @@ class UserException extends Exception
         return new self("Role not found.", 422);
     }
 
+    public static function notFound(): self{
+        return new self("Users not found.", 422);
+    }
+
 }

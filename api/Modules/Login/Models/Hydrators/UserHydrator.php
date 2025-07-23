@@ -17,6 +17,7 @@ class UserHydrator {
         $user->setRoleId($row['role_id']);
         $user->setRole( new UserRole( $row['role_id']) );
         $user->setCreatedAt($row['created_at']);
+        $user->setStatus((int) $row['status']);
         return $user;
     }
 }

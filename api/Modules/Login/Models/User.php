@@ -16,6 +16,8 @@ class User {
     private string $createdAt;
     private ?UserRole $role = null;
 
+    private int $status = 0;
+
     public function setIdentifier(string $identifier): void
     {
         $this->identifier = $identifier;
@@ -64,4 +66,8 @@ class User {
 
     public function getRole(): ?UserRole { return $this->role; }
     public function setRole(UserRole $role): void { $this->role = $role; }
+
+    public function getStatus(): int{ return $this->status; }
+    public function setStatus(int $status): void { $this->status = $status; }
+
 }

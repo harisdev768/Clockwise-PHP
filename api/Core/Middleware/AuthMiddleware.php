@@ -6,12 +6,16 @@ use App\Config\Container;
 use App\Modules\Login\Exceptions\TokenException;
 use App\Modules\Login\Requests\CookieRequest;
 use App\Modules\Login\Services\JWTService;
-use App\Modules\Login\Factories\JWTFactory;
 use App\Modules\User\Exceptions\UserException;
+use App\Modules\User\Models\Mappers\UserMapper;
+use App\Modules\User\Models\User;
+use App\Modules\User\Models\Hydrators\UserHydrator;
 
 class AuthMiddleware
 {
     protected $permissions;
+
+    private User $user;
 
     public function __construct()
     {

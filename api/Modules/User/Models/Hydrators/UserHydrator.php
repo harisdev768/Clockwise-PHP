@@ -17,4 +17,19 @@
          $user->setPasswordHash(password_hash($request->password, PASSWORD_BCRYPT));
          return $user;
      }
+
+     public static function hydrate(array $data): User{
+         $user = new User();
+         $user->setEmail($data['email']);
+         return $user;
+     }
+     public static function hydrateFromArray(array $data): User{
+         $user = new User();
+         $user->setFirstName($data['first_name']);
+         $user->setLastName($data['last_name']);
+         $user->setUsername($data['username']);
+         $user->setEmail($data['email']);
+         $user->setPasswordHash($data['password_hash']);
+         return $user;
+     }
  }

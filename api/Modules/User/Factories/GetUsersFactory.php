@@ -2,9 +2,7 @@
 namespace App\Modules\User\Factories;
 
 use App\Config\Container;
-use App\Modules\User\Models\Hydrators\UserHydrator;
-use App\Modules\User\Models\Mappers\UserMapper;
-use App\Modules\User\Services\UserService;
+use App\Modules\User\Controllers\GetUserController;
 
 
 class GetUsersFactory
@@ -15,7 +13,7 @@ class GetUsersFactory
     }
     public function handle()
     {
-        $service = $this->container->get(UserService::class); // ✅ use DI container
-        return $service->getAllUsers(); // Will return JSON
+        $controller = $this->container->get(GetUserController::class);
+        $controller->handle();
     }
 }

@@ -40,5 +40,10 @@ class LoginException extends Exception
         return new self("Invalid email or password", 401);
     }
 
+    public static function deactivated(): self
+    {
+        return new self("Your account has been deactivated", 403);
+    }
+
 
 }

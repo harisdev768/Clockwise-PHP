@@ -24,6 +24,7 @@ class AddUserUseCase
         $user->setEmail($request->getEmail());
         $user->setUsername($request->getUsername());
         $user->setPasswordHash($request->getPassword());
+        $user->setCreatedBy($request->getCreatedBy());
         $user = $this->service->createUser($user);
 
 

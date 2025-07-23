@@ -53,6 +53,7 @@ class LoginUseCase {
                 'user_id' => $user->getUserId()->getUserIdVal(),
                 'email' => $user->getEmail(),
                 'role' => $user->getRole()->getRoleName(),
+                'status' => $user->getStatus(),
             ];
 
             $token = $this->jwtService->generateToken($payload);

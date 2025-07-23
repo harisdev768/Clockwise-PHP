@@ -21,6 +21,9 @@ class LoginUserService {
         if (!$userRes->userExists() || !password_verify($user->getPassword(), $userRes->getPassword())) {
             throw LoginException::unauthorized();
         }
+        if ($userRes->getStatus() === 0) {
+            throw LoginException::deactivated();
+        }
 
         return $userRes;
 

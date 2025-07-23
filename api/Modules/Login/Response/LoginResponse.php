@@ -21,7 +21,8 @@ class LoginResponse {
             'name' => $userData['name'] ?? null,
             'email' => $userData['email'] ?? null,
             'role' => $userData['role'] ?? null,
-            'token' => $token ?? null
+            'token' => $token ?? null,
+            'status' => $userData['status'] ?? null
         ], 200);
 
 
