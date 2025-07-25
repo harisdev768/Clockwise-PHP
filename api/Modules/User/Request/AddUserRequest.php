@@ -5,12 +5,14 @@ use App\Modules\User\Exceptions\UserException;
 
 class AddUserRequest
 {
+    public int $id;
     public string $firstName;
     public string $lastName;
     public string $email;
     public string $username;
     public string $password;
     public int $created_by;
+    public int $role_id;
 
     public function __construct(array $data)
     {
@@ -20,6 +22,7 @@ class AddUserRequest
         $this->username = trim($data['username']);
         $this->password = trim($data['password']);
         $this->created_by = trim($data['created_by']);
+        $this->role_id = trim($data['role_id']);
     }
 
     public function getEmail(){
@@ -40,6 +43,10 @@ class AddUserRequest
     public function getCreatedBy() {
         return $this->created_by;
     }
+    public function getRoleId(): int
+    {
+        return $this->role_id;
+    }
     public function serialize(): array {
         return [
             'email' => $this->email,
@@ -47,7 +54,8 @@ class AddUserRequest
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
             'username' => $this->username,
-            'created_by' => $this->created_by
+            'created_by' => $this->created_by,
+            'role_id' => $this->role_id,
         ];
     }
 }

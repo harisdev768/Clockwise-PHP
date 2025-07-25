@@ -5,6 +5,7 @@ use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Models\Hydrators\UserHydrator;
 use App\Modules\User\Models\User;
 use App\Config\DB;
+use App\Modules\User\Models\Collections\UserCollection;
 
 class UserMapper
 {
@@ -23,10 +24,17 @@ class UserMapper
             $user->getEmail(),
             $user->getUsername(),
             password_hash($user->getPasswordHash(), PASSWORD_BCRYPT),
-            $user->getCreatedBy()
+            $user->getCreatedBy(),
+            $user->getRole()->getRoleId(),
         ];
     }
+    public function findByIdentifier(User $user): User {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
+        $stmt->execute([$user->getEmail(), $user->getUsername()]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : new User();
 
+    }
     public function checkEmail(User $user): bool{
 
         // Check for duplicate email
@@ -50,22 +58,35 @@ class UserMapper
     public function addUser(User $user){
 
         $stmt = $this->pdo->prepare("
-            INSERT INTO users (first_name, last_name, email, username, password_hash, created_by)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (first_name, last_name, email, username, password_hash, created_by, role_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
-
         $stmt->execute(self::toDatabase($user));
 
-        return $user;
+        $newUser = self::getUser($user);
+
+        return $newUser;
+    }
+    public function getUser(User $user): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
+        $stmt->execute([$user->getEmail(), $user->getUsername()]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : null;
     }
 
-    public function getUser(){
+    public function getUsers(){
 
-        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at, status, created_by FROM users");
+        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at, status, created_by, password_hash FROM users");
         $stmt->execute();
-        $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $users;
+        $users = [];
+        foreach ($rows as $row) {
+            $users[] = UserHydrator::hydrateFromArray($row); // returns User model
+        }
+
+        return new UserCollection($users);
     }
 
     public function findByEmail(User $user): ?User {

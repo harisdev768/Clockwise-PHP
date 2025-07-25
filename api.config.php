@@ -25,6 +25,7 @@ use App\Modules\Login\Services\JWTService;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
 use App\Modules\User\Factories\GetUsersFactory;
+use App\Modules\User\Response\EditUserResponse;
 
 
 // ==============================
@@ -176,7 +177,8 @@ function handleAddUser()
             empty($data['last_name']) ||
             empty($data['email']) ||
             empty($data['username']) ||
-            empty($data['password'])
+            empty($data['password']) ||
+            empty($data['role_id'])
         ) {
             throw UserException::missingCredentials();
         }
@@ -210,14 +212,73 @@ function handleGetUsers()
 
 }
 
-function handleEditUser(){
+function handleEditUserOld(){
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
     if ($middleware->handle('edit_user')) {
         $container = Container::getInstance();
         $data = $container->get(Request::class)->all();
-        print_r($data);
+
 
     }else{
         throw UserException::notAllowed();
     }
+}
+
+function handleEditUser($userId)
+{
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+    if ($middleware->handle('edit_user')) {
+        $request = Container::getInstance()->get(Request::class);
+        $id = $userId ?? null;
+
+        if (!$id) {
+           throw UserException::userIdMissing();
+        }
+
+        $data = $request->addUserId($id);
+
+
+        if (empty($data['first_name']) || empty($data['last_name']) || empty($data['email'])) {
+            throw UserException::missingCredentials();
+        }
+
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            throw UserException::emailFormat();
+        }
+
+        $pdo = Container::getInstance()->get(PDO::class);
+
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$existingUser) {
+            throw UserException::notFound();
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE users 
+            SET first_name = ?, last_name = ?, email = ?, username = ? , role_id = ?, status = ?
+            WHERE id = ?
+        ");
+
+        $success = $stmt->execute([
+            $data['first_name'],
+            $data['last_name'],
+            $data['email'],
+            $data['username'],
+            $data['role_id'],
+            $data['status'],
+            $id
+        ]);
+
+        if ($success) {
+            return EditUserResponse::success($data);
+        }
+
+        throw UserException::editUserFailed();
+    }
+
+    throw UserException::notAllowed();
 }

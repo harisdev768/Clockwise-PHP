@@ -13,11 +13,11 @@ class GetUserUseCase{
     }
 
     public function execute(){
-        $users = $this->userService->getAllUsers(); // use DI container
-
-        if($users){
-            return GetUserResponse::success($users);
-        }else{
+        $users = $this->userService->getAllUsers(); // returns UserCollection
+        if ($users->all()) {
+            $collection = $users->toArray();
+            return GetUserResponse::success($collection); // Convert to array here
+        } else {
             throw UserException::notFound();
         }
     }

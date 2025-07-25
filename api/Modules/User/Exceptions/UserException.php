@@ -73,4 +73,12 @@ class UserException extends Exception
         return new self("Users not found.", 422);
     }
 
+    public static function userIdMissing(): self{
+        return new self("User id is Required.", 422);
+    }
+
+    public static function editUserFailed(): self{
+        return new self("Failed to edit user.", 422);
+    }
+
 }

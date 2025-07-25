@@ -3,6 +3,7 @@ namespace App\Modules\User\UseCases;
 
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Models\User;
+use App\Modules\User\Models\UserRole;
 use App\Modules\User\Response\AddUserResponse;
 use App\Modules\User\Services\UserService;
 use App\Modules\User\Request\AddUserRequest;
@@ -25,8 +26,8 @@ class AddUserUseCase
         $user->setUsername($request->getUsername());
         $user->setPasswordHash($request->getPassword());
         $user->setCreatedBy($request->getCreatedBy());
+        $user->setrole(new UserRole($request->getRoleId()));
         $user = $this->service->createUser($user);
-
 
         if($user->userExists()){
             return AddUserResponse::success();

@@ -24,22 +24,38 @@ class UserService
 
     public function createUser(User $user): User
     {
+        $userRes = $this->mapper->findByIdentifier($user);
 
-        $checkEmail = $this->mapper->checkEmail($user);
-        $checkUsername = $this->mapper->checkUsername($user);
-
-        if($checkEmail === true && $checkUsername === true){
-            $this->mapper->addUser($user);
-            return $user;
-        } else {
+        if( $userRes->userExists() ) { //use userExists()
             return new User();
+        } else {
+            $newUser =  $this->mapper->addUser($user);
+            return $newUser;
         }
 
     }
 
     public function getAllUsers()
     {
-        return $this->mapper->getUser();
+        return $this->mapper->getUsers();
     }
+
+    public function updateUser(int $userId, array $data): array
+    {
+        $userModel = $this->userRepository->findById($userId);
+        if (!$userModel) {
+            throw UserException::notFound("User not found");
+        }
+
+        $userModel->first_name = $data['first_name'];
+        $userModel->last_name = $data['last_name'];
+        $userModel->email = $data['email'];
+        $userModel->role = $data['role'] ?? $userModel->role;
+
+        $this->userRepository->save($userModel);
+
+        return $userModel->toArray();
+    }
+
 
 }

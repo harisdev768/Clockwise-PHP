@@ -3,6 +3,7 @@
 namespace App\Core\Http;
 
 class Request {
+    private array $routeParams = [];
     private array $data;
 
     public function __construct() {
@@ -22,10 +23,24 @@ class Request {
     public function all(): array {
         return $this->data;
     }
+    public function addUserId($id) {
+        $this->data["user_id"] = $id; // Modifies the object's internal data
+        return $this->data; // Returns the modified internal data
+    }
 
     //Get specific key
     public function get(string $key, mixed $default = null): mixed {
         return $this->data[$key] ?? $default;
+    }
+
+    public function setRouteParams(array $params): void
+    {
+        $this->routeParams = $params;
+    }
+
+    public function getRouteParams(): array
+    {
+        return $this->routeParams;
     }
 
 }

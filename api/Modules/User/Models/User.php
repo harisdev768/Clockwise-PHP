@@ -3,20 +3,32 @@ namespace App\Modules\User\Models;
 
 class User
 {
+    private int $id;
     private string $firstName;
     private string $lastName;
     private string $email;
     private string $username;
     private string $passwordHash;
     private int $createdBy;
+    private mixed $createdAt;
     private string $cellPhone;
     private string $homePhone;
     private string $nickname;
     private string $address;
     private string $permissionLevel;
     private int $status;
+    private ?UserRole $role = null;
+
+    private bool $deleted = false;
 
     public function userExists(): bool{ //
+        if( empty($this->id) ) {
+            return false;
+        } else{
+            return true;
+        }
+    }
+    public function userRequiredInfo(): bool{ //
         if( empty($this->firstName) ||
             empty($this->lastName) ||
             empty($this->email) ||
@@ -27,6 +39,7 @@ class User
             return true;
         }
     }
+
 
     public function setFirstName(string $name): void { $this->firstName = $name; }
     public function setLastName(string $name): void { $this->lastName = $name; }
@@ -40,6 +53,9 @@ class User
     public function setAddress(string $address): void { $this->address = $address; }
     public function setPermissionLevel(int $level): void { $this->permissionLevel = $level; }
     public function setStatus(int $status): void { $this->status = $status; }
+    public function setUserId(int $id): void{ $this->id = $id;}
+    public function setCreatedAt($createdAt): void{ $this->createdAt = $createdAt;}
+    public function setrole(UserRole $role): void{ $this->role = $role;}
 
     public function getFirstName(): string { return $this->firstName; }
     public function getLastName(): string { return $this->lastName; }
@@ -53,4 +69,7 @@ class User
     public function getAddress(): string { return $this->address; }
     public function getPermissionLevel(): int{ return $this->permissionLevel; }
     public function getStatus(): int{ return $this->status; }
+    public function getUserId(): int{ return $this->id; }
+    public function getCreatedAt(){ return $this->createdAt; }
+    public function getRole(): ?UserRole { return $this->role; }
 }
