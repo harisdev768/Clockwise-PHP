@@ -56,6 +56,7 @@ class User
     public function setUserId(int $id): void{ $this->id = $id;}
     public function setCreatedAt($createdAt): void{ $this->createdAt = $createdAt;}
     public function setrole(UserRole $role): void{ $this->role = $role;}
+    public function setDeleted(bool $deleted): void{ $this->deleted = $deleted;}
 
     public function getFirstName(): string { return $this->firstName; }
     public function getLastName(): string { return $this->lastName; }
@@ -72,4 +73,7 @@ class User
     public function getUserId(): int{ return $this->id; }
     public function getCreatedAt(){ return $this->createdAt; }
     public function getRole(): ?UserRole { return $this->role; }
+    public function getDeleted(): bool{ return $this->deleted; }
+    public function getDeletedToInt(): int{ return (int) $this->deleted; }
+
 }

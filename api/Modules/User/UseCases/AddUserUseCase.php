@@ -31,7 +31,8 @@ class AddUserUseCase
 
         if($user->userExists()){
             return AddUserResponse::success();
+        }else{
+            throw UserException::userAlreadyExists();
         }
-        throw UserException::userNotAdded();
     }
 }

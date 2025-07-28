@@ -25,7 +25,10 @@ use App\Modules\Login\Services\JWTService;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
 use App\Modules\User\Factories\GetUsersFactory;
+use App\Modules\User\Models\Hydrators\UserHydrator;
+use App\Modules\User\Models\User;
 use App\Modules\User\Response\EditUserResponse;
+use App\Modules\User\Factories\EditUserFactory;
 
 
 // ==============================
@@ -75,6 +78,7 @@ $container->bind(ResetPasswordFactory::class, fn() => new ResetPasswordFactory($
 $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
 $container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container) );
+$container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -97,16 +101,72 @@ function handleLogin()
 {
     $request = Container::getInstance()->get(Request::class);
     $data = $request->all();
+    try {
+        if (empty($data)) {
+            throw LoginException::unauthorized();
+        }
 
-    if (empty($data)) {
-        throw LoginException::unauthorized();
+        if (empty($data['email']) || empty($data['password'])) {
+            throw LoginException::missingCredentials();
+        }
+
+        Container::getInstance()->get(LoginFactory::class)->handleRequest($data);
+    } catch (\Throwable $e) {
+        // Set proper HTTP code
+        http_response_code($e->getCode() ?: 500);
+
+        // Return a JSON response
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
     }
 
-    if (empty($data['email']) || empty($data['password'])) {
-        throw LoginException::missingCredentials();
-    }
+}
+function handleAddUser()
+{
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
-    Container::getInstance()->get(LoginFactory::class)->handleRequest($data);
+        if ($middleware->handle('add_user')) {
+
+            $container = Container::getInstance();
+            $data = $container->get(Request::class)->all();
+
+            if (
+                empty($data['first_name']) ||
+                empty($data['last_name']) ||
+                empty($data['email']) ||
+                empty($data['username']) ||
+                empty($data['password']) ||
+                empty($data['role_id'])
+            ) {
+                throw UserException::missingCredentials();
+            }
+
+            if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                throw UserException::emailFormat();
+            }
+
+            if (strlen($data['password']) < 6) {
+                throw UserException::passwordFormat();
+            }
+
+            // Call the factory
+            $container->get(AddUserFactory::class)->handle($data);
+        } else {
+            throw UserException::notAllowed();
+        }
+    }
+    catch (\Exception $e) {
+        http_response_code($e->getCode() ?: 500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
 }
 
 function handleLogout()
@@ -161,42 +221,6 @@ function handleResetPassword()
     Container::getInstance()->get(ResetPasswordFactory::class)->handler($data);
 }
 
-function handleAddUser()
-{
-
-
-    $middleware = Container::getInstance()->get(AuthMiddleware::class);
-
-    if( $middleware->handle('add_user') ) {
-
-        $container = Container::getInstance();
-        $data = $container->get(Request::class)->all();
-
-        if (
-            empty($data['first_name']) ||
-            empty($data['last_name']) ||
-            empty($data['email']) ||
-            empty($data['username']) ||
-            empty($data['password']) ||
-            empty($data['role_id'])
-        ) {
-            throw UserException::missingCredentials();
-        }
-
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            throw UserException::emailFormat();
-        }
-
-        if (strlen($data['password']) < 6) {
-            throw UserException::passwordFormat();
-        }
-
-        // Call the factory
-        $container->get(AddUserFactory::class)->handle($data);
-    } else{
-        throw UserException::notAllowed();
-    }
-}
 
 function handleGetUsers()
 {
@@ -212,73 +236,41 @@ function handleGetUsers()
 
 }
 
-function handleEditUserOld(){
-    $middleware = Container::getInstance()->get(AuthMiddleware::class);
-    if ($middleware->handle('edit_user')) {
-        $container = Container::getInstance();
-        $data = $container->get(Request::class)->all();
-
-
-    }else{
-        throw UserException::notAllowed();
-    }
-}
-
 function handleEditUser($userId)
 {
-    $middleware = Container::getInstance()->get(AuthMiddleware::class);
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
-    if ($middleware->handle('edit_user')) {
-        $request = Container::getInstance()->get(Request::class);
-        $id = $userId ?? null;
+        if ($middleware->handle('edit_user')) {
+            $request = Container::getInstance()->get(Request::class);
+            $id = $userId ?? null;
 
-        if (!$id) {
-           throw UserException::userIdMissing();
+            if (!$id) {
+                throw UserException::userIdMissing();
+            }
+
+            $data = $request->addUserId($id);
+
+            if (empty($data['first_name']) || empty($data['last_name']) || empty($data['email'])) {
+                throw UserException::missingCredentials();
+            }
+
+            if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                throw UserException::emailFormat();
+            }
+
+            $factory = Container::getInstance()->get(EditUserFactory::class);
+            $factory->handle($data);
         }
 
-        $data = $request->addUserId($id);
-
-
-        if (empty($data['first_name']) || empty($data['last_name']) || empty($data['email'])) {
-            throw UserException::missingCredentials();
-        }
-
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            throw UserException::emailFormat();
-        }
-
-        $pdo = Container::getInstance()->get(PDO::class);
-
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$existingUser) {
-            throw UserException::notFound();
-        }
-
-        $stmt = $pdo->prepare("
-            UPDATE users 
-            SET first_name = ?, last_name = ?, email = ?, username = ? , role_id = ?, status = ?
-            WHERE id = ?
-        ");
-
-        $success = $stmt->execute([
-            $data['first_name'],
-            $data['last_name'],
-            $data['email'],
-            $data['username'],
-            $data['role_id'],
-            $data['status'],
-            $id
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code((int) ($e->getCode() ?: 500));
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
         ]);
-
-        if ($success) {
-            return EditUserResponse::success($data);
-        }
-
-        throw UserException::editUserFailed();
     }
 
-    throw UserException::notAllowed();
 }

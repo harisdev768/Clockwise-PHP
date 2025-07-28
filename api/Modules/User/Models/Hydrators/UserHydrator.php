@@ -35,6 +35,7 @@
          $user->setStatus($data['status']);
          $user->setCreatedAt($data['created_at']);
          $user->setrole( new UserRole($data['role_id']));
+         $user->setDeleted($data['deleted'] ?? false);
          return $user;
      }
 

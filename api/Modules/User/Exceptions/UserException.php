@@ -47,6 +47,11 @@ class UserException extends Exception
     {
         return new self("Username Already Exist. ", 422);
     }
+    public static function userAlreadyExists(): self
+    {
+        return new self("User Already Exist! Change Username or Email. ", 422);
+    }
+
     public static function passwordFormat(): self
     {
         return new self("Password must be at least 6 characters.", 422);

@@ -2,14 +2,11 @@
 
 namespace App\Modules\User\Services;
 
-use App\Config\DB;
-use App\Modules\Login\Exceptions\LoginException;
+
 use App\Modules\User\Models\Hydrators\UserHydrator;
 use App\Modules\User\Models\Mappers\UserMapper;
 use App\Modules\User\Models\User;
-use App\Modules\User\Request\AddUserRequest;
 use App\Modules\User\Exceptions\UserException;
-use App\Modules\User\Response\AddUserResponse;
 
 class UserService
 {
@@ -40,22 +37,20 @@ class UserService
         return $this->mapper->getUsers();
     }
 
-    public function updateUser(int $userId, array $data): array
-    {
-        $userModel = $this->userRepository->findById($userId);
-        if (!$userModel) {
-            throw UserException::notFound("User not found");
+    public function editUser(User $user){
+
+        $checkUser = $this->mapper->findById( (int) $user->getUserId() );
+        if ( !$checkUser->userExists() ) {
+            throw UserException::notFound();
         }
 
-        $userModel->first_name = $data['first_name'];
-        $userModel->last_name = $data['last_name'];
-        $userModel->email = $data['email'];
-        $userModel->role = $data['role'] ?? $userModel->role;
+        $existingCredentials = $this->mapper->existingCredentials($user);
+        if ($existingCredentials->userExists()) {
+            throw UserException::userAlreadyExists();
+        }
 
-        $this->userRepository->save($userModel);
-
-        return $userModel->toArray();
+        $updateUser = $this->mapper->updateUser($user);
+        return $updateUser;
     }
-
 
 }

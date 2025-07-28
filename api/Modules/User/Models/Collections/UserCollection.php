@@ -33,6 +33,8 @@ class UserCollection
                 'status'     => $user->getStatus() ?? null,
                 'created_at' => $user->getCreatedAt() ?? null,
                 'role'       => $user->getRole()->getRoleName() ?? null,
+                'role_id'    => $user->getRole()->getRoleId() ?? null,
+                'delete_user' => $user->getDeleted()
             ];
         }, $this->users);
     }

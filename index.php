@@ -38,7 +38,7 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 // Check for dynamic route manually
 if ($method === 'PUT' && preg_match('#^/users/(\d+)$#', $uri, $matches)) {
     $userId = $matches[1];
-    handleEditUser($userId); // Pass user_id to the handler
+    handleEditUser($userId);
     exit;
 }
 

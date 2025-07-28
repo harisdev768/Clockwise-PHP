@@ -77,13 +77,15 @@ class UserMapper
 
     public function getUsers(){
 
-        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at, status, created_by, password_hash FROM users");
+        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at, status, created_by, password_hash , deleted FROM users");
         $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $users = [];
         foreach ($rows as $row) {
-            $users[] = UserHydrator::hydrateFromArray($row); // returns User model
+            if(!$row['deleted'] ){
+                $users[] = UserHydrator::hydrateFromArray($row); // returns User model
+            }
         }
 
         return new UserCollection($users);
@@ -94,5 +96,45 @@ class UserMapper
         $stmt->execute([$user->getEmail()]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $row ? UserHydrator::hydrateFromArray($row) : $user ;
+    }
+
+    public function findById(int $id){
+
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : new User();
+    }
+
+
+
+    public function existingCredentials(User $user){
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE (email = ? OR username = ?) AND id != ? ");
+        $stmt->execute([$user->getEmail(), $user->getUsername(), $user->getUserId() ]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : new User();
+    }
+    public function updateUser(User $user){
+        $stmt = $this->pdo->prepare("
+            UPDATE users 
+            SET first_name = ?, last_name = ?, email = ?, username = ? , role_id = ?, status = ? , deleted = ?
+            WHERE id = ?
+        ");
+
+        $success = $stmt->execute([
+            $user->getFirstName(),
+            $user->getLastName(),
+            $user->getEmail(),
+            $user->getUsername(),
+            $user->getRole()->getRoleId(),
+            $user->getStatus(),
+            $user->getDeletedToInt(),
+            $user->getUserId(),
+        ]);
+        if($success){
+            return $user;
+        }else{
+            return new User();
+        }
     }
 }

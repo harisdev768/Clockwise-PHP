@@ -5,12 +5,14 @@ use Exception;
 
 class LoginException extends Exception
 {
+    protected $message;
     protected int $statusCode;
 
     public function __construct(string $message = "Bad Request", int $statusCode = 400)
     {
         parent::__construct($message);
         $this->statusCode = $statusCode;
+        $this->message = $message;
         http_response_code($this->statusCode);
     }
 

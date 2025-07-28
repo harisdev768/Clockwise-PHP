@@ -1,13 +1,20 @@
 <?php
 namespace App\Modules\User\Factories;
 
+use App\Config\Container;
 use App\Modules\User\Controllers\EditUserController;
 
 class EditUserFactory
 {
-    public function __invoke(array $vars)
+    private Container $container;
+
+    public function __construct(Container $container) {
+        $this->container = Container::getInstance();
+    }
+
+    public function handle($data)
     {
-        $controller = container()->get(EditUserController::class);
-        return $controller->handle($vars);
+        $controller = $this->container->get(EditUserController::class);
+        $controller->handle($data);
     }
 }
