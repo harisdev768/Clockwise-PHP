@@ -14,15 +14,62 @@ class AddUserRequest
     public int $created_by;
     public int $role_id;
 
+    public string $nickname;
+    public int $department;
+    public int $location;
+    public int $jobrole;
+    public int $status;
+    public string $cellPhone;
+    public string $homePhone;
+    public string $address;
+
+
     public function __construct(array $data)
     {
         $this->firstName = trim($data['first_name']);
         $this->lastName = trim($data['last_name']);
         $this->email = trim($data['email']);
         $this->username = trim($data['username']);
-        $this->password = trim($data['password']);
         $this->created_by = trim($data['created_by']);
         $this->role_id = trim($data['role_id']);
+        $this->password = trim($data['password']);
+        if(!empty($this->password)){
+            $this->password = password_hash($this->password, PASSWORD_DEFAULT);
+        }
+
+        $this->nickname = trim($data["nickname"]);
+        $this->status = trim($data["status"]);
+        $this->address = ($data["address"]);
+        $this->cellPhone = trim($data["cellphone"]);
+        $this->homePhone = trim($data["homephone"]);
+        $this->locationId = (int) $data["location"];
+        $this->departmentId = (int) $data["department"];
+        $this->jobRoleId = (int) $data["jobrole"];
+
+    }
+    public function getNickname(): string{
+        return $this->nickname;
+    }
+    public function getDepartmentId(): int{
+        return $this->departmentId;
+    }
+    public function getLocationId(): int{
+        return $this->locationId;
+    }
+    public function getJobRoleId(): int{
+        return $this->jobRoleId;
+    }
+    public function getStatus(): int{
+        return $this->status;
+    }
+    public function getAddress(): string{
+        return $this->address;
+    }
+    public function getCellPhone(): string{
+        return $this->cellPhone;
+    }
+    public function getHomePhone(): string{
+        return $this->homePhone;
     }
 
     public function getEmail(){

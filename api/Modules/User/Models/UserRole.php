@@ -7,13 +7,14 @@ class UserRole {
     private int $roleId;
     private string $roleName;
 
+    private array $roles = [
+        1 => "Manager",
+        2 => "Employee"
+    ];
+
     public function __construct(int $roleId){
         $this->roleId = $roleId;
-        if($roleId == 1) {
-            $this->roleName = "Manager";
-        } elseif($roleId == 2) {
-            $this->roleName = "Employee";
-        }
+        $this->roleName = $this->roles[$roleId] ?? 'Unknown';
     }
     public function getRoleId(): int {
         return $this->roleId;

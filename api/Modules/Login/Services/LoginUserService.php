@@ -12,6 +12,16 @@ class LoginUserService {
     public function __construct(UserMapper $userMapper) {
         $this->userMapper = $userMapper;
     }
+    public function saveLastLogin(User $user ): ?User
+    {
+        $userRes = $this->userMapper->saveLastLogin($user);
+
+        if(!$userRes->userExists()) {
+            return new User();
+        }
+        return $userRes;
+
+    }
 
     public function login(User $user): ?User {
 
@@ -24,6 +34,8 @@ class LoginUserService {
         if ($userRes->getStatus() === 0) {
             throw LoginException::deactivated();
         }
+
+
 
         return $userRes;
 

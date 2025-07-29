@@ -30,11 +30,21 @@ class UserCollection
                 'last_name'  => $user->getLastName(),
                 'email'      => $user->getEmail(),
                 'username'   => $user->getUsername(),
+                'nickname'   => $user->getNickname(),
+                'cellphone'  => $user->getCellphone(),
+                'homephone'  => $user->getHomePhone(),
+                'address'    => $user->getAddress(),
                 'status'     => $user->getStatus() ?? null,
                 'created_at' => $user->getCreatedAt() ?? null,
                 'role'       => $user->getRole()->getRoleName() ?? null,
                 'role_id'    => $user->getRole()->getRoleId() ?? null,
-                'delete_user' => $user->getDeleted()
+                'delete_user' => $user->getDeleted(),
+                'location'    => $user->getLocation()->getLocationId() ?? null,
+                'location_name'=> $user->getLocation()->getLocationName() ?? null,
+                'department'  => $user->getDepartment()->getDepartmentId() ?? null,
+                'department_name'=> $user->getDepartment()->getDepartmentName() ?? null,
+                'jobrole'      => $user->getJobRole()->getJobRoleId() ?? null,
+                'jobrole_name' => $user->getJobRole()->getJobRoleName() ?? null,
             ];
         }, $this->users);
     }

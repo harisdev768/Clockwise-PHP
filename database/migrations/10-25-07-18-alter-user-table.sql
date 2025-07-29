@@ -11,6 +11,8 @@ ALTER TABLE users
   ADD COLUMN department_id INT UNSIGNED AFTER location_id,
   ADD COLUMN job_role_id INT UNSIGNED AFTER department_id,
   ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE AFTER job_role_id;
+  ADD COLUMN last_login DATETIME NULL;
+
 
   ADD CONSTRAINT fk_location
     FOREIGN KEY (location_id) REFERENCES locations(id)

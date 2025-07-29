@@ -55,18 +55,82 @@ class UserMapper
         }
         return true;
     }
-    public function addUser(User $user){
+    public function addUser(User $user)
+    {
+        $columns = ['first_name', 'last_name', 'email', 'username', 'role_id', 'created_by'];
+        $placeholders = ['?', '?', '?', '?', '?', '?'];
+        $params = [
+            $user->getFirstName(),
+            $user->getLastName(),
+            $user->getEmail(),
+            $user->getUsername(),
+            $user->getRole()->getRoleId(),
+            $user->getCreatedBy()
+        ];
 
-        $stmt = $this->pdo->prepare("
-            INSERT INTO users (first_name, last_name, email, username, password_hash, created_by, role_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute(self::toDatabase($user));
+        // Optional fields
+        if (!empty($user->getPasswordHash())) {
+            $columns[] = 'password_hash';
+            $placeholders[] = '?';
+            $params[] = $user->getPasswordHash();
+        }
 
-        $newUser = self::getUser($user);
+        if (!empty($user->getLocation()->getLocationId())) {
+            $columns[] = 'location_id';
+            $placeholders[] = '?';
+            $params[] = $user->getLocation()->getLocationId();
+        }
 
-        return $newUser;
+        if (!empty($user->getDepartment()->getDepartmentId())) {
+            $columns[] = 'department_id';
+            $placeholders[] = '?';
+            $params[] = $user->getDepartment()->getDepartmentId();
+        }
+
+        if (!empty($user->getJobRole()->getJobRoleId())) {
+            $columns[] = 'job_role_id';
+            $placeholders[] = '?';
+            $params[] = $user->getJobRole()->getJobRoleId();
+        }
+
+        if (!empty($user->getAddress())) {
+            $columns[] = 'address';
+            $placeholders[] = '?';
+            $params[] = $user->getAddress();
+        }
+
+        if (!empty($user->getCellPhone())) {
+            $columns[] = 'cell_phone';
+            $placeholders[] = '?';
+            $params[] = $user->getCellPhone();
+        }
+
+        if (!empty($user->getHomePhone())) {
+            $columns[] = 'home_phone';
+            $placeholders[] = '?';
+            $params[] = $user->getHomePhone();
+        }
+
+        if (!empty($user->getNickname())) {
+            $columns[] = 'nickname';
+            $placeholders[] = '?';
+            $params[] = $user->getNickname();
+        }
+
+        if (!empty($user->getStatus())) {
+            $columns[] = 'status';
+            $placeholders[] = '?';
+            $params[] = $user->getStatus();
+        }
+
+        $sql = "INSERT INTO users (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        // Fetch and return the new user by email/username
+        return self::getUser($user);
     }
+
     public function getUser(User $user): ?User
     {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
@@ -77,14 +141,14 @@ class UserMapper
 
     public function getUsers(){
 
-        $stmt = $this->pdo->prepare("SELECT id, first_name, last_name, email, username, role_id, created_at, status, created_by, password_hash , deleted FROM users");
+        $stmt = $this->pdo->prepare("SELECT * FROM users");
         $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $users = [];
         foreach ($rows as $row) {
             if(!$row['deleted'] ){
-                $users[] = UserHydrator::hydrateFromArray($row); // returns User model
+                $users[] = UserHydrator::hydrateForCollection($row); // returns User model
             }
         }
 
@@ -114,27 +178,60 @@ class UserMapper
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $row ? UserHydrator::hydrateFromArray($row) : new User();
     }
-    public function updateUser(User $user){
-        $stmt = $this->pdo->prepare("
-            UPDATE users 
-            SET first_name = ?, last_name = ?, email = ?, username = ? , role_id = ?, status = ? , deleted = ?
-            WHERE id = ?
-        ");
-
-        $success = $stmt->execute([
+    public function updateUser(User $user)
+    {
+        $params = [
             $user->getFirstName(),
             $user->getLastName(),
             $user->getEmail(),
             $user->getUsername(),
             $user->getRole()->getRoleId(),
             $user->getStatus(),
-            $user->getDeletedToInt(),
-            $user->getUserId(),
-        ]);
-        if($success){
-            return $user;
-        }else{
-            return new User();
+            $user->getLocation()->getLocationId(),
+            $user->getDepartment()->getDepartmentId(),
+            $user->getJobRole()->getJobRoleId(),
+        ];
+
+        $sql = "
+        UPDATE users 
+        SET first_name = ?, last_name = ?, email = ?, username = ?, role_id = ?, status = ? 
+            , location_id = ?, department_id = ?, job_role_id = ? ";
+
+        if (!empty($user->getAddress()) ) {
+            $sql .= ", address = ?";
+            $params[] = $user->getAddress();
         }
+
+        if (!empty($user->getCellPhone()) ) {
+            $sql .= ", cell_phone = ?";
+            $params[] = $user->getCellPhone();
+        }
+        if (!empty($user->getHomePhone()) ) {
+            $sql .= ", home_phone = ?";
+        }
+
+        if (!empty(trim($user->getAddress())) ) {
+            $sql .= ", address = ?";
+            $params[] = $user->getAddress();
+        }
+
+        if (!empty($user->getNickname()) ) {
+            $sql .= ", nickname = ?";
+            $params[] = $user->getNickname();
+        }
+
+        if (!empty($user->getPasswordHash())) {
+            $sql .= ", password_hash = ?";
+            $params[] = $user->getPasswordHash();
+        }
+
+        $sql .= " WHERE id = ?";
+        $params[] = $user->getUserId();
+
+        $stmt = $this->pdo->prepare($sql);
+        $success = $stmt->execute($params);
+
+        return $success ? $user : new User();
     }
+
 }

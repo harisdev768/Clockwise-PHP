@@ -8,18 +8,20 @@ class User
     private string $lastName;
     private string $email;
     private string $username;
+    private string $nickname;
     private string $passwordHash;
     private int $createdBy;
     private mixed $createdAt;
     private string $cellPhone;
     private string $homePhone;
-    private string $nickname;
     private string $address;
     private string $permissionLevel;
     private int $status;
     private ?UserRole $role = null;
-
     private bool $deleted = false;
+    private ?UserLocation $location;
+    private ?UserJobRole $jobRole;
+    private ?UserDepartment $department;
 
     public function userExists(): bool{ //
         if( empty($this->id) ) {
@@ -45,19 +47,21 @@ class User
     public function setLastName(string $name): void { $this->lastName = $name; }
     public function setEmail(string $email): void { $this->email = $email; }
     public function setUsername(string $username): void { $this->username = $username; }
+    public function setNickname(string $nickname): void { $this->nickname = $nickname; }
     public function setPasswordHash(string $hash): void { $this->passwordHash = $hash; }
     public function setCreatedBy(int $id): void { $this->createdBy = $id; }
     public function setCellPhone(string $phone): void { $this->cellPhone = $phone; }
     public function setHomePhone(string $phone): void { $this->homePhone = $phone; }
-    public function setNickname(string $nickname): void { $this->nickname = $nickname; }
     public function setAddress(string $address): void { $this->address = $address; }
     public function setPermissionLevel(int $level): void { $this->permissionLevel = $level; }
     public function setStatus(int $status): void { $this->status = $status; }
     public function setUserId(int $id): void{ $this->id = $id;}
     public function setCreatedAt($createdAt): void{ $this->createdAt = $createdAt;}
     public function setrole(UserRole $role): void{ $this->role = $role;}
+    public function setLocation(UserLocation $location): void{ $this->location = $location;}
+    public function setDepartment(UserDepartment $department): void{ $this->department = $department;}
+    public function setUserJobRole(UserJobRole $jobRole): void{ $this->jobRole = $jobRole;}
     public function setDeleted(bool $deleted): void{ $this->deleted = $deleted;}
-
     public function getFirstName(): string { return $this->firstName; }
     public function getLastName(): string { return $this->lastName; }
     public function getEmail(): string { return $this->email; }
@@ -73,6 +77,9 @@ class User
     public function getUserId(): int{ return $this->id; }
     public function getCreatedAt(){ return $this->createdAt; }
     public function getRole(): ?UserRole { return $this->role; }
+    public function getDepartment(): ?UserDepartment { return $this->department; }
+    public function getLocation(): ?UserLocation { return $this->location; }
+    public function getJobRole(): ?UserJobRole { return $this->jobRole; }
     public function getDeleted(): bool{ return $this->deleted; }
     public function getDeletedToInt(): int{ return (int) $this->deleted; }
 

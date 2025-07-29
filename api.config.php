@@ -135,12 +135,12 @@ function handleAddUser()
             $data = $container->get(Request::class)->all();
 
             if (
-                empty($data['first_name']) ||
-                empty($data['last_name']) ||
-                empty($data['email']) ||
-                empty($data['username']) ||
-                empty($data['password']) ||
-                empty($data['role_id'])
+                empty( trim($data['first_name'])) ||
+                empty( trim($data['last_name'])) ||
+                empty( trim($data['email'])) ||
+                empty( trim($data['username'])) ||
+                empty( trim($data['password'])) ||
+                empty( trim($data['role_id']))
             ) {
                 throw UserException::missingCredentials();
             }
