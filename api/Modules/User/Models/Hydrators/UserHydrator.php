@@ -46,6 +46,7 @@
          $user->setDeleted($data['deleted'] ?? false);
          $user->setrole( new UserRole($data['role_id']));
          $user->setCreatedAt($data['created_at']);
+         $user->setlastLogin($data['last_login'] ?? "");
          //last
          return $user;
      }

@@ -29,11 +29,10 @@ class User {
     }
 
     public function userExists(): bool{ //
-        if (empty($this->userID) || is_null($this->userID)){
+        if ( is_null($this->userID) ){
             return false;
-        }else{
-            return true;
         }
+        return true;
     }
 
     public function getUserID(): ?UserID{
