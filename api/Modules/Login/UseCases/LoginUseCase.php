@@ -48,7 +48,6 @@ class LoginUseCase {
         $user = $this->userService->login($user);
 
         if ($user->userExists()) {
-
             $payload = [
                 'name' => $user->getFirstName().' '.$user->getLastName(),
                 'user_id' => $user->getUserId()->getUserIdVal(),

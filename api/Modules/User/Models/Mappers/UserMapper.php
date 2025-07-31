@@ -132,7 +132,6 @@ class UserMapper
         $recentId = $this->pdo->lastInsertId();
 
         return self::findById(new UserId($recentId));
-//        return self::getUser($user);
     }
 
     public function getUser(User $user): ?User
@@ -151,18 +150,16 @@ class UserMapper
 
     public function getUsers()
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM users");
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE deleted = 0");
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $users = [];
         foreach ($rows as $row) {
-            if (!$row['deleted']) {
                 $users[] = UserHydrator::hydrateForCollection($row);
-            }
         }
 
-        return new UserCollection($users);
+        return UserHydrator::hydrateListOfCollections($users);
     }
 
     public function findByEmail(User $user): ?User

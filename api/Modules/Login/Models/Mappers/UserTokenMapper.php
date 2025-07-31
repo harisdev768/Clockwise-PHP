@@ -28,28 +28,22 @@ class UserTokenMapper {
         $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
-            // Update the existing token
-            $updateStmt = $this->pdo->prepare("
+            $query = $this->pdo->prepare("
                 UPDATE user_tokens
                 SET jwt_token = :token, issued_at = :issued_at, expires_at = :expires_at
                 WHERE user_id = :user_id
             ");
-            $updateStmt->bindValue(':token', $token);
-            $updateStmt->bindValue(':issued_at', $issuedAt);
-            $updateStmt->bindValue(':expires_at', $expiresAt);
-            $updateStmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-            $updateStmt->execute();
         } else {
-            // Insert new token
-            $insertStmt = $this->pdo->prepare("
+            $query = $this->pdo->prepare("
                 INSERT INTO user_tokens (user_id, jwt_token, issued_at, expires_at)
                 VALUES (:user_id, :token, :issued_at, :expires_at)
             ");
-            $insertStmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-            $insertStmt->bindValue(':token', $token);
-            $insertStmt->bindValue(':issued_at', $issuedAt);
-            $insertStmt->bindValue(':expires_at', $expiresAt);
-            $insertStmt->execute();
         }
+
+        $query->bindValue(':token', $token);
+        $query->bindValue(':issued_at', $issuedAt);
+        $query->bindValue(':expires_at', $expiresAt);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
     }
 }

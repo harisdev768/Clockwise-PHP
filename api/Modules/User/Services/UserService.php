@@ -42,7 +42,6 @@ class UserService
 
         $checkUser = $this->mapper->findById( new UserId($user->getUserId()) );
 
-//        $checkUser = $this->mapper->findById( (int) $user->getUserId() );
         if ( !$checkUser->userExists() ) {
             throw UserException::notFound();
         }
