@@ -35,12 +35,8 @@ class GetUserUseCase{
             ? $this->userService->getAllUsersWithParams($filter)
             : $this->userService->getAllUsers();
 
-        if ($users->all()) {
             return GetUserResponse::success($users->toArray());
-        }
 
-        throw UserException::notFound();
     }
-
 
 }

@@ -227,17 +227,17 @@ function handleResetPassword()
 
 function handleGetUsers()
 {
-//    $middleware = Container::getInstance()->get(AuthMiddleware::class);
-//
-//    if ($middleware->handle('get_users')) {
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+    if ($middleware->handle('get_users')) {
 
         $container = Container::getInstance();
         $request = Container::getInstance()->get(Request::class);
         $data = $request->all();
         $container->get(GetUsersFactory::class)->handle($data);
-//    } else {
-//        throw UserException::notAllowed();
-//    }
+    } else {
+        throw UserException::notAllowed();
+    }
 
 }
 
@@ -256,17 +256,6 @@ function handleGetMeta(){
     }
 }
 
-function handleSearchUsers()
-{
-    $middleware = Container::getInstance()->get(AuthMiddleware::class);
-    if ($middleware->handle('search_users')) {
-        $container = Container::getInstance();
-
-    }else{
-        throw UserException::notAllowed();
-    }
-
-}
 function handleEditUser($userId)
 {
     try {
