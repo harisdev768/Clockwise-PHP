@@ -60,6 +60,7 @@ class UserHydrator
          $user->setDeleted($data['deleted'] ?? false);
          $user->setrole( new UserRole($data['role_id']));
          $user->setCreatedAt($data['created_at']);
+         $user->setLastLogin($data['last_login'] ?? "");
          return $user;
     }
 

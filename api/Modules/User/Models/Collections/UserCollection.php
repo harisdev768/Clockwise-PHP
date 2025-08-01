@@ -35,6 +35,7 @@ class UserCollection
                 'department_name'=> $user->getDepartment()->getDepartmentName() ?? null,
                 'jobrole'      => $user->getJobRole()->getJobRoleId() ?? null,
                 'jobrole_name' => $user->getJobRole()->getJobRoleName() ?? null,
+                'last_login'   => $user->getLastLogin() ?? "N/A",
             ];
         }, $this->users);
     }

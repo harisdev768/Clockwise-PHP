@@ -56,6 +56,8 @@ class LoginUseCase {
                 'status' => $user->getStatus(),
             ];
 
+            
+
             $token = $this->jwtService->generateToken($payload);
             $this->tokenMapper->saveToken($user->getUserID()->getUserIdVal(), $token);
             self::setCookie($token);

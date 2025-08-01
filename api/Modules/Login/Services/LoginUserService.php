@@ -35,7 +35,7 @@ class LoginUserService {
             throw LoginException::deactivated();
         }
 
-
+        $this->userMapper->updateLastLogin($userRes->getUserID());
 
         return $userRes;
 
