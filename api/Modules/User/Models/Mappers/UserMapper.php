@@ -6,11 +6,14 @@ use App\Modules\User\Models\Hydrators\UserHydrator;
 use App\Modules\User\Models\User;
 use App\Config\DB;
 use App\Modules\User\Models\Collections\UserCollection;
+use App\Modules\User\Models\UserId;
+use App\Modules\User\Models\UserSearchFilter;
+use PDO;
 
 class UserMapper
 {
-    private $pdo;
-    private UserHydrator $hydrator;
+    private PDO $pdo;
+
     public function __construct()
     {
         $this->pdo = DB::getConnection();
@@ -23,215 +26,292 @@ class UserMapper
             $user->getLastName(),
             $user->getEmail(),
             $user->getUsername(),
+            // Keeping your original behavior (no double-hash here):
             password_hash($user->getPasswordHash(), PASSWORD_BCRYPT),
             $user->getCreatedBy(),
             $user->getRole()->getRoleId(),
         ];
     }
-    public function findByIdentifier(User $user): User {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
-        $stmt->execute([$user->getEmail(), $user->getUsername()]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    public function findByIdentifier(User $user): User
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM users
+            WHERE email = :email OR username = :username
+        ");
+        $stmt->bindValue(':email', $user->getEmail());
+        $stmt->bindValue(':username', $user->getUsername());
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? UserHydrator::hydrateFromArray($row) : new User();
-
     }
-    public function checkEmail(User $user): bool{
 
-        // Check for duplicate email
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
-        $stmt->execute([$user->getEmail()]);
-        if ($stmt->fetchColumn() > 0) {
+    public function checkEmail(User $user): bool
+    {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE email = :email");
+        $stmt->bindValue(':email', $user->getEmail());
+        $stmt->execute();
+
+        if ((int)$stmt->fetchColumn() > 0) {
             throw UserException::emailExists();
         }
         return true;
     }
-    public function checkUsername(User $user): bool{
 
-        // Check for duplicate username
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
-        $stmt->execute([$user->getUsername()]);
-        if ($stmt->fetchColumn() > 0) {
+    public function checkUsername(User $user): bool
+    {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE username = :username");
+        $stmt->bindValue(':username', $user->getUsername());
+        $stmt->execute();
+
+        if ((int)$stmt->fetchColumn() > 0) {
             throw UserException::userExists();
         }
         return true;
     }
+
     public function addUser(User $user)
     {
-        $columns = ['first_name', 'last_name', 'email', 'username', 'role_id', 'created_by'];
-        $placeholders = ['?', '?', '?', '?', '?', '?'];
-        $params = [
-            $user->getFirstName(),
-            $user->getLastName(),
-            $user->getEmail(),
-            $user->getUsername(),
-            $user->getRole()->getRoleId(),
-            $user->getCreatedBy()
+        // Start with required/base fields
+        $fields = [
+            'first_name'  => $user->getFirstName(),
+            'last_name'   => $user->getLastName(),
+            'email'       => $user->getEmail(),
+            'username'    => $user->getUsername(),
+            'role_id'     => $user->getRole()->getRoleId(),
+            'created_by'  => $user->getCreatedBy(),
         ];
 
-        // Optional fields
+        // Optional fields (only include when provided)
         if (!empty($user->getPasswordHash())) {
-            $columns[] = 'password_hash';
-            $placeholders[] = '?';
-            $params[] = $user->getPasswordHash();
+            $fields['password_hash'] = $user->getPasswordHash();
         }
-
         if (!empty($user->getLocation()->getLocationId())) {
-            $columns[] = 'location_id';
-            $placeholders[] = '?';
-            $params[] = $user->getLocation()->getLocationId();
+            $fields['location_id'] = $user->getLocation()->getLocationId();
         }
-
         if (!empty($user->getDepartment()->getDepartmentId())) {
-            $columns[] = 'department_id';
-            $placeholders[] = '?';
-            $params[] = $user->getDepartment()->getDepartmentId();
+            $fields['department_id'] = $user->getDepartment()->getDepartmentId();
         }
-
         if (!empty($user->getJobRole()->getJobRoleId())) {
-            $columns[] = 'job_role_id';
-            $placeholders[] = '?';
-            $params[] = $user->getJobRole()->getJobRoleId();
+            $fields['job_role_id'] = $user->getJobRole()->getJobRoleId();
         }
-
         if (!empty($user->getAddress())) {
-            $columns[] = 'address';
-            $placeholders[] = '?';
-            $params[] = $user->getAddress();
+            $fields['address'] = $user->getAddress();
         }
-
         if (!empty($user->getCellPhone())) {
-            $columns[] = 'cell_phone';
-            $placeholders[] = '?';
-            $params[] = $user->getCellPhone();
+            $fields['cell_phone'] = $user->getCellPhone();
         }
-
         if (!empty($user->getHomePhone())) {
-            $columns[] = 'home_phone';
-            $placeholders[] = '?';
-            $params[] = $user->getHomePhone();
+            $fields['home_phone'] = $user->getHomePhone();
         }
-
         if (!empty($user->getNickname())) {
-            $columns[] = 'nickname';
-            $placeholders[] = '?';
-            $params[] = $user->getNickname();
+            $fields['nickname'] = $user->getNickname();
         }
-
         if (!empty($user->getStatus())) {
-            $columns[] = 'status';
-            $placeholders[] = '?';
-            $params[] = $user->getStatus();
+            $fields['status'] = $user->getStatus();
         }
 
-        $sql = "INSERT INTO users (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+        $columns = array_keys($fields);
+        $placeholders = array_map(fn ($c) => ':' . $c, $columns);
 
-        // Fetch and return the new user by email/username
-        return self::getUser($user);
+        $sql = "INSERT INTO users (" . implode(', ', $columns) . ")
+                VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($fields as $col => $val) {
+            // Basic type hints for common integer columns
+            $type = match ($col) {
+                'role_id', 'created_by', 'location_id', 'department_id', 'job_role_id', 'status' => PDO::PARAM_INT,
+                default => PDO::PARAM_STR
+            };
+            $stmt->bindValue(':' . $col, $val, $type);
+        }
+
+        $stmt->execute();
+
+        $recentId = $this->pdo->lastInsertId();
+
+        return self::findById(new UserId($recentId));
     }
 
     public function getUser(User $user): ?User
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
-        $stmt->execute([$user->getEmail(), $user->getUsername()]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM users
+            WHERE email = :email OR username = :username
+        ");
+        $stmt->bindValue(':email', $user->getEmail());
+        $stmt->bindValue(':username', $user->getUsername());
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? UserHydrator::hydrateFromArray($row) : null;
     }
 
-    public function getUsers(){
-
-        $stmt = $this->pdo->prepare("SELECT * FROM users");
+    public function getUsers()
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE deleted = 0");
         $stmt->execute();
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $users = [];
         foreach ($rows as $row) {
-            if(!$row['deleted'] ){
-                $users[] = UserHydrator::hydrateForCollection($row); // returns User model
+            $users[] = UserHydrator::hydrateForCollection($row);
+        }
+
+        return UserHydrator::hydrateListOfCollections($users);
+    }
+
+    public function getUsersWithParam(UserSearchFilter $filter): UserCollection
+    {
+        $sql    = "SELECT * FROM users WHERE deleted = 0";
+        $params = [];
+        $types  = [];
+
+        $keyword = $filter->getKeyword();
+        if (!empty($keyword)) {
+            $keyword = trim($keyword);
+            if ($keyword !== '') {
+                $sql .= " AND (username   LIKE :kw
+                        OR first_name LIKE :kw
+                        OR last_name  LIKE :kw)";
+                $params[':kw'] = '%' . $keyword . '%';
+                $types[':kw']  = PDO::PARAM_STR;
             }
         }
 
-        return new UserCollection($users);
-    }
-
-    public function findByEmail(User $user): ?User {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$user->getEmail()]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $row ? UserHydrator::hydrateFromArray($row) : $user ;
-    }
-
-    public function findById(int $id){
-
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $row ? UserHydrator::hydrateFromArray($row) : new User();
-    }
-
-
-
-    public function existingCredentials(User $user){
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE (email = ? OR username = ?) AND id != ? ");
-        $stmt->execute([$user->getEmail(), $user->getUsername(), $user->getUserId() ]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $row ? UserHydrator::hydrateFromArray($row) : new User();
-    }
-    public function updateUser(User $user)
-    {
-        $params = [
-            $user->getFirstName(),
-            $user->getLastName(),
-            $user->getEmail(),
-            $user->getUsername(),
-            $user->getRole()->getRoleId(),
-            $user->getStatus(),
-            $user->getLocation()->getLocationId(),
-            $user->getDepartment()->getDepartmentId(),
-            $user->getJobRole()->getJobRoleId(),
-        ];
-
-        $sql = "
-        UPDATE users 
-        SET first_name = ?, last_name = ?, email = ?, username = ?, role_id = ?, status = ? 
-            , location_id = ?, department_id = ?, job_role_id = ? ";
-
-        if (!empty($user->getAddress()) ) {
-            $sql .= ", address = ?";
-            $params[] = $user->getAddress();
+        // location_id
+        $locationId = $filter->getLocationId();
+        if (!empty($locationId)) {
+            $sql .= " AND location_id = :location_id";
+            $params[':location_id'] = (int) $locationId;
+            $types[':location_id']  = PDO::PARAM_INT;
         }
 
-        if (!empty($user->getCellPhone()) ) {
-            $sql .= ", cell_phone = ?";
-            $params[] = $user->getCellPhone();
-        }
-        if (!empty($user->getHomePhone()) ) {
-            $sql .= ", home_phone = ?";
-        }
-
-        if (!empty(trim($user->getAddress())) ) {
-            $sql .= ", address = ?";
-            $params[] = $user->getAddress();
+        // department_id
+        $departmentId = $filter->getDepartmentId();
+        if (!empty($departmentId)) {
+            $sql .= " AND department_id = :department_id";
+            $params[':department_id'] = (int) $departmentId;
+            $types[':department_id']  = PDO::PARAM_INT;
         }
 
-        if (!empty($user->getNickname()) ) {
-            $sql .= ", nickname = ?";
-            $params[] = $user->getNickname();
+        // job_role_id
+        $jobRoleId = $filter->getJobRoleId();
+        if (!empty($jobRoleId)) {
+            $sql .= " AND job_role_id = :job_role_id";
+            $params[':job_role_id'] = (int) $jobRoleId;
+            $types[':job_role_id']  = PDO::PARAM_INT;
         }
 
-        if (!empty($user->getPasswordHash())) {
-            $sql .= ", password_hash = ?";
-            $params[] = $user->getPasswordHash();
-        }
-
-        $sql .= " WHERE id = ?";
-        $params[] = $user->getUserId();
+        // Optional: consistent ordering
+        $sql .= " ORDER BY id DESC";
 
         $stmt = $this->pdo->prepare($sql);
-        $success = $stmt->execute($params);
 
-        return $success ? $user : new User();
+        foreach ($params as $name => $value) {
+            $stmt->bindValue($name, $value, $types[$name] ?? PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $users = [];
+        foreach ($rows as $row) {
+            $users[] = UserHydrator::hydrateForCollection($row);
+        }
+
+        return UserHydrator::hydrateListOfCollections($users);
     }
 
+
+    public function findByEmail(User $user): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = :email");
+        $stmt->bindValue(':email', $user->getEmail());
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : $user;
+    }
+
+    public function findById(UserId $userId): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = :id");
+        $stmt->bindValue(':id', $userId->getUserIdVal(), PDO::PARAM_INT);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : new User();
+    }
+
+    public function existingCredentials(User $user)
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM users
+            WHERE (email = :email OR username = :username) AND id != :id
+        ");
+        $stmt->bindValue(':email', $user->getEmail());
+        $stmt->bindValue(':username', $user->getUsername());
+        $stmt->bindValue(':id', $user->getUserId(), PDO::PARAM_INT);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? UserHydrator::hydrateFromArray($row) : new User();
+    }
+
+    public function updateUser(User $user)
+    {
+        // Required/always-updated fields
+        $fields = [
+            'first_name'   => $user->getFirstName(),
+            'last_name'    => $user->getLastName(),
+            'email'        => $user->getEmail(),
+            'username'     => $user->getUsername(),
+            'role_id'      => $user->getRole()->getRoleId(),
+            'status'       => $user->getStatus(),
+            'location_id'  => $user->getLocation()->getLocationId(),
+            'department_id'=> $user->getDepartment()->getDepartmentId(),
+            'job_role_id'  => $user->getJobRole()->getJobRoleId(),
+        ];
+
+        // Optional updates (only if provided)
+        if (!empty($user->getAddress())) {
+            $fields['address'] = $user->getAddress();
+        }
+        if (!empty($user->getCellPhone())) {
+            $fields['cell_phone'] = $user->getCellPhone();
+        }
+        if (!empty($user->getHomePhone())) {
+            $fields['home_phone'] = $user->getHomePhone();
+        }
+        if (!empty($user->getNickname())) {
+            $fields['nickname'] = $user->getNickname();
+        }
+        if (!empty($user->getPasswordHash())) {
+            $fields['password_hash'] = $user->getPasswordHash();
+        }
+
+        $setClauses = [];
+        foreach (array_keys($fields) as $col) {
+            $setClauses[] = "$col = :$col";
+        }
+
+        $sql = "UPDATE users SET " . implode(', ', $setClauses) . " WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($fields as $col => $val) {
+            $type = match ($col) {
+                'role_id', 'status', 'location_id', 'department_id', 'job_role_id' => PDO::PARAM_INT,
+                default => PDO::PARAM_STR
+            };
+            $stmt->bindValue(':' . $col, $val, $type);
+        }
+
+        $stmt->bindValue(':id', $user->getUserId(), PDO::PARAM_INT);
+
+        $success = $stmt->execute();
+        return $success ? $user : new User();
+    }
 }

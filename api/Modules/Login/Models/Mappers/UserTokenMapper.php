@@ -19,20 +19,21 @@ class UserTokenMapper {
         $existing = $stmt->fetch();
 
         if ($existing) {
-            // Update the existing token
-            $updateStmt = $this->pdo->prepare("
+            $query = $this->pdo->prepare("
                 UPDATE user_tokens 
                 SET jwt_token = ?, issued_at = ?, expires_at = ?
                 WHERE user_id = ?
             ");
-            $updateStmt->execute([$token, $issuedAt, $expiresAt, $userId]);
         } else {
-            // Insert new token
-            $insertStmt = $this->pdo->prepare("
+            $query = $this->pdo->prepare("
                 INSERT INTO user_tokens (user_id, jwt_token, issued_at, expires_at)
                 VALUES (?, ?, ?, ?)
             ");
-            $insertStmt->execute([$userId, $token, $issuedAt, $expiresAt]);
         }
+        $query->bindValue(':user_id', $userId, \PDO::PARAM_INT);
+        $query->bindValue(':token', $token);
+        $query->bindValue(':issued_at', $issuedAt);
+        $query->bindValue(':expires_at', $expiresAt);
+        $query->execute([$token, $issuedAt, $expiresAt, $userId]);
     }
 }

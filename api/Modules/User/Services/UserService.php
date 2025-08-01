@@ -3,10 +3,13 @@
 namespace App\Modules\User\Services;
 
 
+use App\Modules\User\Models\Collections\UserCollection;
 use App\Modules\User\Models\Hydrators\UserHydrator;
 use App\Modules\User\Models\Mappers\UserMapper;
 use App\Modules\User\Models\User;
 use App\Modules\User\Exceptions\UserException;
+use App\Modules\User\Models\UserId;
+use App\Modules\User\Models\UserSearchFilter;
 
 class UserService
 {
@@ -23,7 +26,7 @@ class UserService
     {
         $userRes = $this->mapper->findByIdentifier($user);
 
-        if( $userRes->userExists() ) { //use userExists()
+        if( $userRes->userExists() ) {
             return new User();
         } else {
             $newUser =  $this->mapper->addUser($user);
@@ -37,9 +40,15 @@ class UserService
         return $this->mapper->getUsers();
     }
 
+    public function getAllUsersWithParams(UserSearchFilter $filter): UserCollection
+    {
+        return $this->mapper->getUsersWithParam($filter);
+    }
+
     public function editUser(User $user){
 
-        $checkUser = $this->mapper->findById( (int) $user->getUserId() );
+        $checkUser = $this->mapper->findById( new UserId($user->getUserId()) );
+
         if ( !$checkUser->userExists() ) {
             throw UserException::notFound();
         }

@@ -6,6 +6,7 @@ return [
                 'add_user',
                 'edit_user',
                 'get_users',
+                'get_meta',
             ],
         ],
         'Employee' => [
@@ -18,5 +19,6 @@ return [
         'add_user',
         'edit_user',
         'get_users',
+        'get_meta',
     ],
 ];
