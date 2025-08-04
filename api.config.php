@@ -22,6 +22,7 @@ use App\Modules\Login\Models\Mappers\UserTokenMapper;
 use App\Modules\Login\Requests\CookieRequest;
 use App\Modules\Login\Requests\LoginRequest;
 use App\Modules\Login\Services\JWTService;
+use App\Modules\TimeClock\Requests\ClockRequest;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
 use App\Modules\User\Factories\GetUsersFactory;
@@ -29,6 +30,9 @@ use App\Modules\User\Models\Hydrators\UserHydrator;
 use App\Modules\User\Models\User;
 use App\Modules\User\Response\EditUserResponse;
 use App\Modules\User\Factories\EditUserFactory;
+use App\Modules\TimeClock\Factories\ClockInFactory;
+use App\Modules\TimeClock\Factories\ClockOutFactory;
+
 
 
 // ==============================
@@ -79,6 +83,8 @@ $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
 $container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container) );
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
+$container->bind(ClockInFactory::class, fn() => new ClockInFactory($container));
+$container->bind(ClockOutFactory::class, fn() => new ClockOutFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -271,6 +277,20 @@ function handleEditUser($userId)
             'success' => false,
             'message' => $e->getMessage(),
         ]);
+    }
+
+}
+
+function handleClock(){
+    $request = Container::getInstance()->get(Request::class);
+    $data = $request->all();
+
+    if( $data['action'] === 'in' ){
+        $factory = Container::getInstance()->get(ClockInFactory::class);
+        $factory->handleClockIn($data);
+    }else if($data['action'] === 'out'){
+        $factory = Container::getInstance()->get(ClockOutFactory::class);
+        $factory->handleClockOut($data);
     }
 
 }
