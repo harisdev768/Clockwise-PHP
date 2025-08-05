@@ -12,12 +12,14 @@ class ClockMapper {
         $this->pdo = DB::getConnection();
     }
 
-    public function insertClockIn(Clock $clock): void {
+    public function insertClockIn(Clock $clock): Clock {
         $stmt = $this->pdo->prepare("INSERT INTO clock_entries (user_id, clock_in) VALUES (:user_id, :clock_in)");
         $stmt->execute([
             ':user_id' => $clock->getUserId(),
             ':clock_in' => $clock->getClockInTime(),
         ]);
+        $clock->setClockId($this->pdo->lastInsertId());
+        return $clock;
     }
 
     public function updateClockOut(Clock $clock): Clock {

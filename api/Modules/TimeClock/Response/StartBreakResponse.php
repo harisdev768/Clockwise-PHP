@@ -2,9 +2,9 @@
 namespace App\Modules\TimeClock\Response;
 
 
-use App\Modules\TimeClock\Models\Clock;
+use App\Modules\TimeClock\Models\BreakTime;
 
-class ClockOutResponse {
+class StartBreakResponse {
 
     public static function json($data = [], int $statusCode = 200): void
     {
@@ -14,16 +14,17 @@ class ClockOutResponse {
         exit;
     }
 
-    public static function success(Clock $clock): void
+    public static function success(BreakTime $break): void
     {
         self::json([
             'success' => true,
-            'message' => "Clocked-Out Successfully",
+            'message' => "Break Started Successfully",
             'data' => [
-                'clock_id' => $clock->getClockId(),
+                'break_id' => $break->getBreakId(),
+                'clock_id' => $break->getClockId(),
                 'time' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                'clockedInTime' => $clock->getClockInTime(),
-                'clockedOutTime' => $clock->getClockOutTime(),
+                'started_at' => $break->getStartedAt(),
+                'ended_at' => $break->getEndedAt(),
             ],
         ], 200);
 

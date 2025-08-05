@@ -32,7 +32,8 @@ use App\Modules\User\Response\EditUserResponse;
 use App\Modules\User\Factories\EditUserFactory;
 use App\Modules\TimeClock\Factories\ClockInFactory;
 use App\Modules\TimeClock\Factories\ClockOutFactory;
-
+use App\Modules\TimeClock\Factories\StartBreakFactory;
+use App\Modules\TimeClock\Factories\EndBreakFactory;
 
 
 // ==============================
@@ -85,6 +86,8 @@ $container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container)
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
 $container->bind(ClockInFactory::class, fn() => new ClockInFactory($container));
 $container->bind(ClockOutFactory::class, fn() => new ClockOutFactory($container));
+$container->bind(StartBreakFactory::class, fn() => new StartBreakFactory($container));
+$container->bind(EndBreakFactory::class, fn() => new EndBreakFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -291,6 +294,21 @@ function handleClock(){
     }else if($data['action'] === 'out'){
         $factory = Container::getInstance()->get(ClockOutFactory::class);
         $factory->handleClockOut($data);
+    }
+
+}
+
+
+function handleBreak(){
+    $request = Container::getInstance()->get(Request::class);
+    $data = $request->all();
+
+    if( $data['action'] === 'start' ){
+        $factory = Container::getInstance()->get(StartBreakFactory::class);
+        $factory->handleStartBreak($data);
+    }else if($data['action'] === 'end'){
+        $factory = Container::getInstance()->get(EndBreakFactory::class);
+        $factory->handleEndBreak($data);
     }
 
 }

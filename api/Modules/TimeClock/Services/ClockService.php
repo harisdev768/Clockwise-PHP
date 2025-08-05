@@ -14,13 +14,12 @@ class ClockService {
 
     public function clockIn(Clock $clock): Clock {
         $clock->setClockInTime((new \DateTimeImmutable())->format('Y-m-d H:i:s'));
-        $this->mapper->insertClockIn($clock);
-        return $clock;
+        return $this->mapper->insertClockIn($clock);
     }
 
     public function clockOut(Clock $clock): Clock {
         $clock->setClockOutTime((new \DateTimeImmutable())->format('Y-m-d H:i:s'));
-        return $this->mapper->updateClockOut($clock);;
+        return $this->mapper->updateClockOut($clock);
     }
 
     public function isClockedIn(Clock $clock): Clock {
