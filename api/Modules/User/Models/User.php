@@ -16,14 +16,13 @@ class User
     private string $homePhone;
     private string $address;
     private string $permissionLevel;
+    private string $lastLogin;
     private int $status;
     private ?UserRole $role = null;
     private bool $deleted = false;
     private ?UserLocation $location;
     private ?UserJobRole $jobRole;
     private ?UserDepartment $department;
-
-    private string $lastLogin;
 
     public function userExists(): bool{ //
         if( empty($this->id) ) {

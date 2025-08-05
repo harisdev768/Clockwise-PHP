@@ -14,7 +14,7 @@ class User {
     private string $username = ''; // Initialize with an empty string
     private int $roleId;
     private string $createdAt;
-    private string $lastLogin;
+    private ?string $lastLogin;
     private ?UserRole $role = null;
 
     private int $status = 0;
@@ -29,11 +29,10 @@ class User {
     }
 
     public function userExists(): bool{ //
-        if (empty($this->userID) || is_null($this->userID)){
+        if ( is_null($this->userID) ){
             return false;
-        }else{
-            return true;
         }
+        return true;
     }
 
     public function getUserID(): ?UserID{
@@ -62,7 +61,7 @@ class User {
     public function getRoleId(): int { return $this->roleId; }
     public function setRoleId(int $roleId): void { $this->roleId = $roleId; }
 
-    public function setLastLogin(string $lastLogin): void{ $this->lastLogin = $lastLogin; }
+    public function setLastLogin(?string $lastLogin): void{ $this->lastLogin = $lastLogin; }
 
     public function getCreatedAt(): string { return $this->createdAt; }
     public function getLastLogin(): string{ return $this->lastLogin; }

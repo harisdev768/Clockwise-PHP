@@ -11,6 +11,7 @@ use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Models\UserId;
 use App\Modules\User\Models\UserSearchFilter;
 
+
 class UserService
 {
     private UserHydrator $hydrator;

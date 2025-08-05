@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Modules\User\Models\Hydrators;
 
 use App\Modules\User\Models\Collections\UserCollection;
@@ -23,6 +22,7 @@ class UserHydrator
         $user->setPasswordHash(password_hash($request->password, PASSWORD_BCRYPT));
         return $user;
     }
+
 
 
     public static function hydrate(array $data): User
