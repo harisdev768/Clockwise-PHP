@@ -7,6 +7,7 @@ use App\Modules\User\Models\Hydrators\UserHydrator;
 use App\Modules\User\Models\Mappers\UserMapper;
 use App\Modules\User\Models\User;
 use App\Modules\User\Exceptions\UserException;
+use App\Modules\User\Models\UserId;
 
 class UserService
 {
@@ -39,7 +40,8 @@ class UserService
 
     public function editUser(User $user){
 
-        $checkUser = $this->mapper->findById( (int) $user->getUserId() );
+        $checkUser = $this->mapper->findById( new UserId($user->getUserId()) );
+
         if ( !$checkUser->userExists() ) {
             throw UserException::notFound();
         }

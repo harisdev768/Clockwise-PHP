@@ -1,6 +1,7 @@
 <?php
  namespace App\Modules\User\Models\Hydrators;
 
+ use App\Modules\User\Models\Collections\UserCollection;
  use App\Modules\User\Models\UserDepartment;
  use App\Modules\User\Models\UserJobRole;
  use App\Modules\User\Models\UserLocation;
@@ -27,6 +28,14 @@
          $user->setEmail($data['email']);
          return $user;
      }
+     public static function hydrateListOfCollections(array $users = []): UserCollection
+     {
+         $userCollection = new UserCollection();
+         foreach ($users as $user) {
+             $userCollection->add($user);
+         }
+         return $userCollection;
+     }
      public static function hydrateForCollection(array $data): User{
 
          $user = new User();
@@ -46,7 +55,7 @@
          $user->setDeleted($data['deleted'] ?? false);
          $user->setrole( new UserRole($data['role_id']));
          $user->setCreatedAt($data['created_at']);
-         //last
+         $user->setlastLogin($data['last_login'] ?? "");
          return $user;
      }
      public static function hydrateFromArray(array $data): User{

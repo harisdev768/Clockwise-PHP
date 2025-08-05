@@ -6,13 +6,6 @@ class UserCollection
 {
     private array $users = [];
 
-    public function __construct(array $users = [])
-    {
-        foreach ($users as $user) {
-            $this->add($user);
-        }
-    }
-
     public function add(User $user): void
     {
         $this->users[] = $user;
@@ -45,6 +38,7 @@ class UserCollection
                 'department_name'=> $user->getDepartment()->getDepartmentName() ?? null,
                 'jobrole'      => $user->getJobRole()->getJobRoleId() ?? null,
                 'jobrole_name' => $user->getJobRole()->getJobRoleName() ?? null,
+                'last_login'   => $user->getlastLogin() ?? null,
             ];
         }, $this->users);
     }

@@ -25,7 +25,6 @@ class LoginUserService {
 
     public function login(User $user): ?User {
 
-
         $userRes = $this->userMapper->findByIdentifier($user);
 
         if (!$userRes->userExists() || !password_verify($user->getPassword(), $userRes->getPassword())) {
@@ -35,7 +34,7 @@ class LoginUserService {
             throw LoginException::deactivated();
         }
 
-
+        $this->userMapper->updateLastLogin($userRes);
 
         return $userRes;
 
