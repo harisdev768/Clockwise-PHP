@@ -138,7 +138,8 @@ class UserMapper
     {
         $stmt = $this->pdo->prepare("
             SELECT * FROM users
-            WHERE email = :email OR username = :username
+            WHERE (email = :email OR username = :username)
+            AND deleted = 0
         ");
         $stmt->bindValue(':email', $user->getEmail());
         $stmt->bindValue(':username', $user->getUsername());
