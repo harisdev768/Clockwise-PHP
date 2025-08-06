@@ -3,7 +3,7 @@ namespace App\Modules\TimeClock\Exceptions;
 
 use Exception;
 
-class ClockInException extends Exception
+class ClockStatusException extends Exception
 {
     protected $message;
     protected int $statusCode;
@@ -30,18 +30,16 @@ class ClockInException extends Exception
         ];
     }
 
-    // Methods for specific Clock-In errors
+    // Methods for specific Clock-Out errors
 
-    public static function alreadyClockedIn(): self
+    public static function notFound(): self
     {
-        return new self("User Already Clocked-In.", 400);
+        return new self("Clock Not Found.", 404);
     }
 
     public static function userIdMissing(): self{
         return new self("User Id Missing.", 400);
     }
 
-    public static function userActionMissing(): self{
-        return new self("User Action Missing.", 400);
-    }
+
 }

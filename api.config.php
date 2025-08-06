@@ -34,6 +34,9 @@ use App\Modules\TimeClock\Factories\ClockInFactory;
 use App\Modules\TimeClock\Factories\ClockOutFactory;
 use App\Modules\TimeClock\Factories\StartBreakFactory;
 use App\Modules\TimeClock\Factories\EndBreakFactory;
+use App\Modules\TimeClock\Exceptions\ClockInException;
+use App\Modules\TimeClock\Factories\ClockStatusFactory;
+use App\Modules\TimeClock\Exceptions\ClockStatusException;
 
 
 // ==============================
@@ -88,6 +91,7 @@ $container->bind(ClockInFactory::class, fn() => new ClockInFactory($container));
 $container->bind(ClockOutFactory::class, fn() => new ClockOutFactory($container));
 $container->bind(StartBreakFactory::class, fn() => new StartBreakFactory($container));
 $container->bind(EndBreakFactory::class, fn() => new EndBreakFactory($container));
+$container->bind(ClockStatusFactory::class, fn() => new ClockStatusFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -285,8 +289,16 @@ function handleEditUser($userId)
 }
 
 function handleClock(){
+    try{
     $request = Container::getInstance()->get(Request::class);
     $data = $request->all();
+
+    if( empty($data['user_id']) ){
+        throw ClockInException::userIdMissing();
+    }
+    if( empty($data['action']) ){
+        throw ClockInException::userActionMissing();
+    }
 
     if( $data['action'] === 'in' ){
         $factory = Container::getInstance()->get(ClockInFactory::class);
@@ -295,13 +307,29 @@ function handleClock(){
         $factory = Container::getInstance()->get(ClockOutFactory::class);
         $factory->handleClockOut($data);
     }
+    }
+    catch (\Exception $e) {
+        http_response_code($e->getCode() ?: 500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
 
 }
 
-
 function handleBreak(){
+    try{
     $request = Container::getInstance()->get(Request::class);
     $data = $request->all();
+
+    if( empty($data['user_id']) ){
+        throw ClockInException::userIdMissing();
+    }
+    if( empty($data['action']) ){
+        throw ClockInException::userActionMissing();
+    }
 
     if( $data['action'] === 'start' ){
         $factory = Container::getInstance()->get(StartBreakFactory::class);
@@ -310,5 +338,27 @@ function handleBreak(){
         $factory = Container::getInstance()->get(EndBreakFactory::class);
         $factory->handleEndBreak($data);
     }
+    }
+    catch (\Exception $e) {
+        http_response_code($e->getCode() ?: 500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
+}
+
+function handleClockStatus(){
+
+    $request = Container::getInstance()->get(Request::class);
+    $data = $request->all();
+
+    if ( empty($data['user_id']) ){
+        throw ClockStatusException::userIdMissing();
+    }
+
+    $container = Container::getInstance();
+    $response = $container->get(ClockStatusFactory::class)->handle($data);
 
 }

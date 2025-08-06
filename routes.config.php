@@ -14,3 +14,4 @@ $router->add('POST', '/add-user', fn() => handleAddUser());
 $router->add('GET', '/get-users', fn() => handleGetUsers());
 $router->add('POST', '/clock', fn() => handleClock());
 $router->add('POST', '/break', fn() => handleBreak());
+$router->add('GET', '/clock/status', fn() => handleClockStatus());
