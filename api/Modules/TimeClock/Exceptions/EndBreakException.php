@@ -30,8 +30,6 @@ class EndBreakException extends Exception
         ];
     }
 
-    // Methods for specific Clock-Out errors
-
     public static function notClockedIn(): self
     {
         return new self("User is not Clocked-In", 400);

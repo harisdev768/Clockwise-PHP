@@ -3,7 +3,7 @@ namespace App\Modules\TimeClock\Exceptions;
 
 use Exception;
 
-class ClockOutException extends Exception
+class NotesException extends Exception
 {
     protected $message;
     protected int $statusCode;
@@ -30,13 +30,16 @@ class ClockOutException extends Exception
         ];
     }
 
-    public static function notClockedIn(): self
-    {
-        return new self("User is not Clocked-In", 400);
+    public static function userIdMissing(): self{
+        return new self("User Id Missing.", 400);
     }
-    public static function alreadyClockedOut(): self
-    {
-        return new self("User Already Clocked-Out.", 400);
+
+    public static function notesEmpty(): self{
+        return new self("Notes are empty.", 400);
+    }
+
+    public static function notClockedIn(): self{
+        return new self("User Clocked out.", 403);
     }
 
 

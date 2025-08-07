@@ -29,9 +29,6 @@ class StartBreakException extends Exception
             'code' => $this->getCode(),
         ];
     }
-
-    // Methods for specific Start Break errors
-
     public static function breakAlreadyStarted(): self
     {
         return new self("User Already at Break.", 400);

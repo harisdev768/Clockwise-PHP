@@ -30,8 +30,6 @@ class ClockStatusException extends Exception
         ];
     }
 
-    // Methods for specific Clock-Out errors
-
     public static function notFound(): self
     {
         return new self("Clock Not Found.", 404);

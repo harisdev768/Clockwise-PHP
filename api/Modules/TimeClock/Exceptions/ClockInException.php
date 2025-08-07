@@ -30,8 +30,6 @@ class ClockInException extends Exception
         ];
     }
 
-    // Methods for specific Clock-In errors
-
     public static function alreadyClockedIn(): self
     {
         return new self("User Already Clocked-In.", 400);
