@@ -11,9 +11,9 @@ class GetUsersFactory
     public function __construct(Container $container){
         $this->container = $container;
     }
-    public function handle()
+    public function handle($data)
     {
         $controller = $this->container->get(GetUserController::class);
-        $controller->handle();
+        $controller->handle($data);
     }
 }

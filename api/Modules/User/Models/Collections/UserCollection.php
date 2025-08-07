@@ -11,9 +11,6 @@ class UserCollection
         $this->users[] = $user;
     }
 
-    /**
-     * Returns array of hydrated users
-     */
     public function toArray(): array
     {
         return array_map(function (User $user) {
@@ -38,7 +35,7 @@ class UserCollection
                 'department_name'=> $user->getDepartment()->getDepartmentName() ?? null,
                 'jobrole'      => $user->getJobRole()->getJobRoleId() ?? null,
                 'jobrole_name' => $user->getJobRole()->getJobRoleName() ?? null,
-                'last_login'   => $user->getlastLogin() ?? null,
+                'last_login'   => $user->getLastLogin() ?? null,
             ];
         }, $this->users);
     }

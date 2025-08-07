@@ -7,6 +7,8 @@ use App\Modules\User\Models\User;
 use App\Config\DB;
 use App\Modules\User\Models\Collections\UserCollection;
 use App\Modules\User\Models\UserId;
+use App\Modules\User\Models\UserSearchFilter;
+
 use PDO;
 
 class UserMapper
@@ -25,7 +27,6 @@ class UserMapper
             $user->getLastName(),
             $user->getEmail(),
             $user->getUsername(),
-            // Keeping your original behavior (no double-hash here):
             password_hash($user->getPasswordHash(), PASSWORD_BCRYPT),
             $user->getCreatedBy(),
             $user->getRole()->getRoleId(),
@@ -72,7 +73,6 @@ class UserMapper
 
     public function addUser(User $user)
     {
-        // Start with required/base fields
         $fields = [
             'first_name'  => $user->getFirstName(),
             'last_name'   => $user->getLastName(),
@@ -82,7 +82,6 @@ class UserMapper
             'created_by'  => $user->getCreatedBy(),
         ];
 
-        // Optional fields (only include when provided)
         if (!empty($user->getPasswordHash())) {
             $fields['password_hash'] = $user->getPasswordHash();
         }
@@ -111,7 +110,7 @@ class UserMapper
             $fields['status'] = $user->getStatus();
         }
 
-        $columns = array_keys($fields);
+        $columns      = array_keys($fields);
         $placeholders = array_map(fn ($c) => ':' . $c, $columns);
 
         $sql = "INSERT INTO users (" . implode(', ', $columns) . ")
@@ -119,7 +118,6 @@ class UserMapper
         $stmt = $this->pdo->prepare($sql);
 
         foreach ($fields as $col => $val) {
-            // Basic type hints for common integer columns
             $type = match ($col) {
                 'role_id', 'created_by', 'location_id', 'department_id', 'job_role_id', 'status' => PDO::PARAM_INT,
                 default => PDO::PARAM_STR
@@ -128,7 +126,6 @@ class UserMapper
         }
 
         $stmt->execute();
-
         $recentId = $this->pdo->lastInsertId();
 
         return self::findById(new UserId($recentId));
@@ -138,8 +135,7 @@ class UserMapper
     {
         $stmt = $this->pdo->prepare("
             SELECT * FROM users
-            WHERE (email = :email OR username = :username)
-            AND deleted = 0
+            WHERE email = :email OR username = :username
         ");
         $stmt->bindValue(':email', $user->getEmail());
         $stmt->bindValue(':username', $user->getUsername());
@@ -149,15 +145,71 @@ class UserMapper
         return $row ? UserHydrator::hydrateFromArray($row) : null;
     }
 
-    public function getUsers()
+    public function getUsers(): UserCollection
     {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE deleted = 0");
         $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $rows  = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $users = [];
         foreach ($rows as $row) {
-                $users[] = UserHydrator::hydrateForCollection($row);
+            $users[] = UserHydrator::hydrateForCollection($row);
+        }
+
+        return UserHydrator::hydrateListOfCollections($users);
+    }
+
+    public function getUsersWithParam(UserSearchFilter $filter): UserCollection
+    {
+        $sql    = "SELECT * FROM users WHERE deleted = 0";
+        $params = [];
+        $types  = [];
+
+        $keyword = $filter->getKeyword();
+        if (!empty($keyword)) {
+            $keyword = trim($keyword);
+            if ($keyword !== '') {
+                $sql .= " AND (username LIKE :kw
+                        OR first_name LIKE :kw
+                        OR last_name LIKE :kw)";
+                $params[':kw'] = '%' . $keyword . '%';
+                $types[':kw']  = PDO::PARAM_STR;
+            }
+        }
+
+        $locationId = $filter->getLocationId();
+        if (!empty($locationId)) {
+            $sql .= " AND location_id = :location_id";
+            $params[':location_id'] = (int)$locationId;
+            $types[':location_id']  = PDO::PARAM_INT;
+        }
+
+        $departmentId = $filter->getDepartmentId();
+        if (!empty($departmentId)) {
+            $sql .= " AND department_id = :department_id";
+            $params[':department_id'] = (int)$departmentId;
+            $types[':department_id']  = PDO::PARAM_INT;
+        }
+
+        $jobRoleId = $filter->getJobRoleId();
+        if (!empty($jobRoleId)) {
+            $sql .= " AND job_role_id = :job_role_id";
+            $params[':job_role_id'] = (int)$jobRoleId;
+            $types[':job_role_id']  = PDO::PARAM_INT;
+        }
+
+        $sql .= " ORDER BY id DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $name => $value) {
+            $stmt->bindValue($name, $value, $types[$name] ?? PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
+        $rows  = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $users = [];
+        foreach ($rows as $row) {
+            $users[] = UserHydrator::hydrateForCollection($row);
         }
 
         return UserHydrator::hydrateListOfCollections($users);
@@ -200,20 +252,18 @@ class UserMapper
 
     public function updateUser(User $user)
     {
-        // Required/always-updated fields
         $fields = [
-            'first_name'   => $user->getFirstName(),
-            'last_name'    => $user->getLastName(),
-            'email'        => $user->getEmail(),
-            'username'     => $user->getUsername(),
-            'role_id'      => $user->getRole()->getRoleId(),
-            'status'       => $user->getStatus(),
-            'location_id'  => $user->getLocation()->getLocationId(),
-            'department_id'=> $user->getDepartment()->getDepartmentId(),
-            'job_role_id'  => $user->getJobRole()->getJobRoleId(),
+            'first_name'    => $user->getFirstName(),
+            'last_name'     => $user->getLastName(),
+            'email'         => $user->getEmail(),
+            'username'      => $user->getUsername(),
+            'role_id'       => $user->getRole()->getRoleId(),
+            'status'        => $user->getStatus(),
+            'location_id'   => $user->getLocation()->getLocationId(),
+            'department_id' => $user->getDepartment()->getDepartmentId(),
+            'job_role_id'   => $user->getJobRole()->getJobRoleId(),
         ];
 
-        // Optional updates (only if provided)
         if (!empty($user->getAddress())) {
             $fields['address'] = $user->getAddress();
         }

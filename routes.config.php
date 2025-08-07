@@ -12,3 +12,4 @@ $router->add('POST', '/forgot-password', fn() => handleForgotPassword());
 $router->add('POST', '/reset-password', fn() => handleResetPassword());
 $router->add('POST', '/add-user', fn() => handleAddUser());
 $router->add('GET', '/get-users', fn() => handleGetUsers());
+$router->add('GET','/get-meta', fn() => handleGetMeta());

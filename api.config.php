@@ -24,11 +24,10 @@ use App\Modules\Login\Requests\LoginRequest;
 use App\Modules\Login\Services\JWTService;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
+use App\Modules\User\Factories\GetMetaFactory;
 use App\Modules\User\Factories\GetUsersFactory;
-use App\Modules\User\Models\Hydrators\UserHydrator;
-use App\Modules\User\Models\User;
-use App\Modules\User\Response\EditUserResponse;
 use App\Modules\User\Factories\EditUserFactory;
+use App\Modules\User\Exceptions\MetaException;
 
 
 // ==============================
@@ -79,6 +78,7 @@ $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
 $container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container) );
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
+$container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -86,6 +86,9 @@ $container->bind(UserTokenMapper::class, new UserTokenMapper($container->get(PDO
 
 // Exceptions
 $container->bind(ApiException::class, fn() => new ApiException());
+$container->bind(UserException::class, fn() => new UserException());
+$container->bind(LoginException::class, fn() => new LoginException());
+$container->bind(MetaException::class, fn() => new MetaException());
 
 // Requests
 $container->bind(LoginRequest::class, fn() => new Request());
@@ -229,11 +232,28 @@ function handleGetUsers()
     if ($middleware->handle('get_users')) {
 
         $container = Container::getInstance();
-        $response = $container->get(GetUsersFactory::class)->handle();
+        $request = Container::getInstance()->get(Request::class);
+        $data = $request->all();
+        $container->get(GetUsersFactory::class)->handle($data);
     } else {
         throw UserException::notAllowed();
     }
 
+}
+
+function handleGetMeta(){
+
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+    if ($middleware->handle('get_meta')) {
+
+        $container = Container::getInstance();
+        $container->get(GetMetaFactory::class)->handle();
+    }else{
+
+        throw MetaException::notAllowed();
+
+    }
 }
 
 function handleEditUser($userId)
@@ -274,3 +294,4 @@ function handleEditUser($userId)
     }
 
 }
+
