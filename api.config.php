@@ -351,6 +351,7 @@ function handleBreak()
                 $factory->handleEndBreak($data);
             }
         }
+        throw UserException::notAllowed();
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
@@ -378,7 +379,7 @@ function handleClockStatus()
             $container = Container::getInstance();
             $response = $container->get(ClockStatusFactory::class)->handle($data);
         }
-
+        throw UserException::notAllowed();
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
@@ -392,29 +393,29 @@ function handleClockStatus()
 
 function handleAddNote()
 {
-
     try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
-        $request = Container::getInstance()->get(Request::class);
-        $data = $request->all();
+        if ($middleware->handle('add_note')) {
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
 
-
-        if (empty($data['clock_id'])) {
-            throw NotesException::notClockedIn();
+            if (empty($data['clock_id'])) {
+                throw NotesException::notClockedIn();
+            }
+            if (empty($data['user_id'])) {
+                throw NotesException::userIdMissing();
+            }
+            if (empty($data['note'])) {
+                throw NotesException::notesEmpty();
+            }
+            if (strlen($data['note']) > 512) {
+                throw NotesException::notesTooLong();
+            }
+            $container = Container::getInstance();
+            $container->get(AddNoteFactory::class)->handleAddNotes($data);
         }
-        if (empty($data['user_id'])) {
-            throw NotesException::userIdMissing();
-        }
-        if (empty($data['note'])) {
-            throw NotesException::notesEmpty();
-        }
-        if (strlen($data['note']) > 512) {
-            throw NotesException::notesTooLong();
-        }
-
-        $container = Container::getInstance();
-        $container->get(AddNoteFactory::class)->handleAddNotes($data);
-
+        throw UserException::notAllowed();
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
@@ -423,5 +424,4 @@ function handleAddNote()
             'message' => $e->getMessage(),
         ]);
     }
-
 }

@@ -8,14 +8,16 @@ return [
                 'get_users',
                 'clock_update',
                 'break_update',
-                'clock_status'
+                'clock_status',
+                'add_note'
             ],
         ],
         'Employee' => [
             'permissions' => [
                 'clock_update',
                 'break_update',
-                'clock_status'
+                'clock_status',
+                'add_note'
             ],
         ],
     ],
@@ -26,6 +28,7 @@ return [
         'get_users',
         'clock_update',
         'break_update',
-        'clock_status'
+        'clock_status',
+        'add_note'
     ],
 ];

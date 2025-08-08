@@ -38,5 +38,4 @@ class ClockStatusException extends Exception
         return new self("User Id Missing.", 400);
     }
 
-
 }
