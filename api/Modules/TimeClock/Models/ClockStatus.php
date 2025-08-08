@@ -1,6 +1,9 @@
 <?php
 namespace App\Modules\TimeClock\Models;
 
+use App\Modules\TimeClock\Models\Collections\BreakCollection;
+use App\Modules\TimeClock\Models\Collections\NoteCollection;
+
 class ClockStatus {
     private int $userId;
     private ?string $clockInTime = null;
@@ -13,6 +16,12 @@ class ClockStatus {
     private bool $clocked = false;
     private bool $isBreak = false;
 
+    private BreakTime $breakTime;
+
+    private ?BreakCollection $breakCollection = null;
+
+    private ?NoteCollection $noteCollection = null;
+
     public function clockExists() : bool
     {
         if( isset($this->userId) ){
@@ -21,11 +30,26 @@ class ClockStatus {
         return false;
 
     }
+
+    public function setBreakCollection(?BreakCollection $breakCollection): void{
+        $this->breakCollection = $breakCollection;
+    }
+    public function getBreakCollection(): ?BreakCollection{
+        return $this->breakCollection;
+    }
+
+    public function setNotesCollection(?NoteCollection $collection): void{
+        $this->noteCollection = $collection;
+    }
+    public function getNotesCollection(): ?NoteCollection{
+        return $this->noteCollection;
+    }
+
     public function setBreakStart(?string $start) : void{ $this->breakStart = $start; }
     public function getBreakStart() : ?string{   return $this->breakStart;  }
+
     public function setBreakEnd(?string $end) : void{ $this->breakEnd = $end; }
     public function getBreakEnd() : ?string{   return $this->breakEnd;  }
-
 
     public function setBreak(bool $isBreak) : void{ $this->isBreak = $isBreak; }
     public function getBreak() : bool{ return $this->isBreak; }

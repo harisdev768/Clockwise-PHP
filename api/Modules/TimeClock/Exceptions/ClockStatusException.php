@@ -35,6 +35,11 @@ class ClockStatusException extends Exception
         return new self("Clock Not Found.", 404);
     }
 
+    public static function notFound2(): self
+    {
+        return new self("Clock Not Found.222", 404);
+    }
+
     public static function userIdMissing(): self{
         return new self("User Id Missing.", 400);
     }

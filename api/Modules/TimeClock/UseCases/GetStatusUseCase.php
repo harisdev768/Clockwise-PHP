@@ -2,7 +2,6 @@
 namespace App\Modules\TimeClock\UseCases;
 
 use App\Modules\TimeClock\Exceptions\ClockStatusException;
-use App\Modules\TimeClock\Requests\StatusRequest;
 use App\Modules\TimeClock\Response\ClockStatusResponse;
 use App\Modules\TimeClock\Services\ClockStatusService;
 use App\Modules\TimeClock\Models\ClockStatus;
@@ -21,7 +20,7 @@ class GetStatusUseCase{
         if($clockStatus->clockExists()){
             return ClockStatusResponse::success($clockStatus);
         }
-        throw ClockStatusException::notFound();
+        return ClockStatusResponse::notFound($clockStatus);
     }
 
 

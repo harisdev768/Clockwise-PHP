@@ -87,7 +87,7 @@ $container->bind(ForgotPasswordFactory::class, fn() => new ForgotPasswordFactory
 $container->bind(ResetPasswordFactory::class, fn() => new ResetPasswordFactory($container));
 $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
-$container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container) );
+$container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container));
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
 $container->bind(ClockInFactory::class, fn() => new ClockInFactory($container));
 $container->bind(ClockOutFactory::class, fn() => new ClockOutFactory($container));
@@ -140,6 +140,7 @@ function handleLogin()
     }
 
 }
+
 function handleAddUser()
 {
     try {
@@ -151,12 +152,12 @@ function handleAddUser()
             $data = $container->get(Request::class)->all();
 
             if (
-                empty( trim($data['first_name'])) ||
-                empty( trim($data['last_name'])) ||
-                empty( trim($data['email'])) ||
-                empty( trim($data['username'])) ||
-                empty( trim($data['password'])) ||
-                empty( trim($data['role_id']))
+                empty(trim($data['first_name'])) ||
+                empty(trim($data['last_name'])) ||
+                empty(trim($data['email'])) ||
+                empty(trim($data['username'])) ||
+                empty(trim($data['password'])) ||
+                empty(trim($data['role_id']))
             ) {
                 throw UserException::missingCredentials();
             }
@@ -174,8 +175,7 @@ function handleAddUser()
         } else {
             throw UserException::notAllowed();
         }
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
         echo json_encode([
@@ -230,7 +230,7 @@ function handleResetPassword()
     $token = $data['token'];
     $newPassword = $data['new_password'];
 
-    if ( empty($token) || empty($newPassword) ) {
+    if (empty($token) || empty($newPassword)) {
         throw ResetPasswordException::missingCredentials();
     }
 
@@ -281,7 +281,7 @@ function handleEditUser($userId)
 
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code((int) ($e->getCode() ?: 500));
+        http_response_code((int)($e->getCode() ?: 500));
         header('Content-Type: application/json');
         echo json_encode([
             'success' => false,
@@ -291,8 +291,9 @@ function handleEditUser($userId)
 
 }
 
-function handleClock(){
-    try{
+function handleClock()
+{
+    try {
         $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
         if ($middleware->handle('clock_update')) {
@@ -315,8 +316,7 @@ function handleClock(){
             }
         }
         throw UserException::notAllowed();
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
         echo json_encode([
@@ -327,8 +327,9 @@ function handleClock(){
 
 }
 
-function handleBreak(){
-    try{
+function handleBreak()
+{
+    try {
         $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
         if ($middleware->handle('break_update')) {
@@ -350,8 +351,7 @@ function handleBreak(){
                 $factory->handleEndBreak($data);
             }
         }
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
         echo json_encode([
@@ -361,7 +361,8 @@ function handleBreak(){
     }
 }
 
-function handleClockStatus(){
+function handleClockStatus()
+{
 
     try {
         $middleware = Container::getInstance()->get(AuthMiddleware::class);
@@ -378,8 +379,7 @@ function handleClockStatus(){
             $response = $container->get(ClockStatusFactory::class)->handle($data);
         }
 
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
         echo json_encode([
@@ -390,23 +390,38 @@ function handleClockStatus(){
 
 }
 
-function handleAddNote(){
+function handleAddNote()
+{
 
-    $request = Container::getInstance()->get(Request::class);
-    $data = $request->all();
+    try {
+
+        $request = Container::getInstance()->get(Request::class);
+        $data = $request->all();
 
 
-    if ( empty($data['clock_id']) ){
-        throw NotesException::notClockedIn();
+        if (empty($data['clock_id'])) {
+            throw NotesException::notClockedIn();
+        }
+        if (empty($data['user_id'])) {
+            throw NotesException::userIdMissing();
+        }
+        if (empty($data['note'])) {
+            throw NotesException::notesEmpty();
+        }
+        if (strlen($data['note']) > 512) {
+            throw NotesException::notesTooLong();
+        }
+
+        $container = Container::getInstance();
+        $container->get(AddNoteFactory::class)->handleAddNotes($data);
+
+    } catch (\Exception $e) {
+        http_response_code($e->getCode() ?: 500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
     }
-    if ( empty($data['user_id']) ){
-        throw NotesException::userIdMissing();
-    }
-    if( empty($data['note']) ){
-        throw NotesException::notesEmpty();
-    }
-
-    $container = Container::getInstance();
-    $container->get(AddNoteFactory::class)->handleAddNotes($data);
 
 }

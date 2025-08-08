@@ -42,5 +42,9 @@ class NotesException extends Exception
         return new self("User Clocked out.", 403);
     }
 
+    public static function notesTooLong(): self{
+        return new self("Notes are too long.", 400);
+    }
+
 
 }

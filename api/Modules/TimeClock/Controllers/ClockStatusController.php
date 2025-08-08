@@ -2,7 +2,6 @@
 namespace App\Modules\TimeClock\Controllers;
 
 use App\Modules\TimeClock\Models\ClockStatus;
-use App\Modules\TimeClock\Requests\ClockRequest;
 use App\Modules\TimeClock\UseCases\GetStatusUseCase;
 use App\Modules\TimeClock\Requests\StatusRequest;
 
@@ -19,7 +18,6 @@ class ClockStatusController{
     {
         $status = new ClockStatus();
         $status->setUserId($request->getUserId());
-
         $this->useCase->execute($status);
     }
 

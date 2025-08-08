@@ -3,7 +3,6 @@ namespace App\Modules\TimeClock\Factories;
 
 use App\Config\Container;
 use App\Modules\TimeClock\Controllers\ClockStatusController;
-use App\Modules\TimeClock\Requests\ClockRequest;
 use App\Modules\TimeClock\Requests\StatusRequest;
 
 class ClockStatusFactory{
