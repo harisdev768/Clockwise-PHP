@@ -4,15 +4,7 @@ namespace App\Modules\TimeClock\Models\Collections;
 use App\Modules\TimeClock\Models\Note;
 
 class NoteCollection{
-
     private array $notes = [];
-
-    public function __construct(array $notes = [])
-    {
-        foreach ($notes as $note) {
-            $this->add($note);
-        }
-    }
 
     public function add(Note $note): void
     {

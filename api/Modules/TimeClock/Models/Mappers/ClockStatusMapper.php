@@ -76,13 +76,13 @@ class ClockStatusMapper
         $stmt->execute();
 
         $breaksFetched = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $breaks = [];
+        $breaksCollection = new BreakCollection();
 
         foreach ($breaksFetched as $break) {
-            $breaks[] = ClockStatusHydrator::hydrateBreak($break);
+            $breaksCollection->add(ClockStatusHydrator::hydrateBreak($break));
         }
 
-        $status->setBreakCollection(new BreakCollection($breaks));
+        $status->setBreakCollection($breaksCollection);
 
         return $status;
     }
@@ -100,13 +100,13 @@ class ClockStatusMapper
         $stmt->execute();
 
         $notesFetched = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $notes = [];
+        $notesCollection = new NoteCollection();
 
         foreach ($notesFetched as $note) {
-            $notes[] = ClockStatusHydrator::hydrateNote($note);
+            $notesCollection->add(ClockStatusHydrator::hydrateNote($note));
         }
 
-        $status->setNotesCollection(new NoteCollection($notes));
+        $status->setNotesCollection($notesCollection);
 
         return $status;
     }
