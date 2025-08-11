@@ -1,8 +1,4 @@
 <?php
-
-// ==============================
-// FACTORIES
-// ==============================
 use App\Config\Container;
 use App\Core\Exceptions\ApiException;
 use App\Core\Http\Request;
@@ -29,42 +25,6 @@ use App\Modules\User\Factories\GetUsersFactory;
 use App\Modules\User\Factories\EditUserFactory;
 use App\Modules\User\Exceptions\MetaException;
 
-
-// ==============================
-// CONTAINER
-// ==============================
-
-
-// ==============================
-// RESPONSE CLASSES
-// ==============================
-
-
-// ==============================
-// SERVICES
-// ==============================
-
-
-// ==============================
-// MAPPERS
-// ==============================
-
-
-// ==============================
-// REQUESTS
-// ==============================
-
-
-// ==============================
-// EXCEPTIONS
-// ==============================
-
-
-// ==============================
-// CONTAINER SETUP / BINDINGS
-// ==============================
-
-// Get or create singleton container instance
 $container ??= Container::getInstance();
 
 // Services
@@ -230,7 +190,6 @@ function handleGetUsers()
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if ($middleware->handle('get_users')) {
-
         $container = Container::getInstance();
         $request = Container::getInstance()->get(Request::class);
         $data = $request->all();
@@ -246,7 +205,6 @@ function handleGetMeta(){
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if ($middleware->handle('get_meta')) {
-
         $container = Container::getInstance();
         $container->get(GetMetaFactory::class)->handle();
     }else{

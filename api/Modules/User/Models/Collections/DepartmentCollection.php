@@ -7,13 +7,6 @@ class DepartmentCollection
 {
     private array $departments = [];
 
-    public function __construct(array $departments = [])
-    {
-        foreach ($departments as $department) {
-            $this->add($department);
-        }
-    }
-
     public function add(UserDepartment $department): void
     {
         $this->departments[] = $department;

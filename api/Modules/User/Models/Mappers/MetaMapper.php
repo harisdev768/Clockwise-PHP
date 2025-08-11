@@ -25,18 +25,16 @@ class MetaMapper
 
     public function getUsers()
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM users");
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE deleted = 0");
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $users = [];
+        $usersCollection = new UserCollection();
         foreach ($rows as $row) {
-            if (!$row['deleted']) {
-                $users[] = UserHydrator::hydrateForCollection($row);
-            }
+            $usersCollection->add(UserHydrator::hydrateForCollection($row));
         }
 
-        return new UserCollection($users);
+        return $usersCollection;
     }
 
     public function getDepartments()
@@ -45,12 +43,11 @@ class MetaMapper
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $departments = [];
-
+        $departmentsCollection = new DepartmentCollection();
         foreach ($rows as $row) {
-            $departments[] = MetaHydrator::hydrateDepartmentForCollection($row);
+            $departmentsCollection->add(MetaHydrator::hydrateDepartmentForCollection($row));
         }
-        return new DepartmentCollection($departments);
+        return $departmentsCollection;
     }
 
     public function getJobRoles()
@@ -59,13 +56,12 @@ class MetaMapper
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $jobroles = [];
-
+        $jobRolesCollection = new JobRoleCollection();
         foreach ($rows as $row) {
-            $jobroles[] = MetaHydrator::hydrateJobRoleForCollection($row);
+            $jobRolesCollection->add(MetaHydrator::hydrateJobRoleForCollection($row));
         }
 
-        return new JobRoleCollection($jobroles);
+        return $jobRolesCollection;
     }
     public function getLocations()
     {
@@ -73,13 +69,12 @@ class MetaMapper
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $locations = [];
-
+        $locationsCollection = new LocationCollection();
         foreach ($rows as $row) {
-            $locations[] = MetaHydrator::hydrateLocationForCollection($row);
+            $locationsCollection->add(MetaHydrator::hydrateLocationForCollection($row));
         }
 
-        return new LocationCollection($locations);
+        return $locationsCollection;
     }
 
 }

@@ -7,13 +7,6 @@ class JobRoleCollection
 {
     private array $jobRoles = [];
 
-    public function __construct(array $jobRoles = [])
-    {
-        foreach ($jobRoles as $jobRole) {
-            $this->add($jobRole);
-        }
-    }
-
     public function add(UserJobRole $jobRole): void
     {
         $this->jobRoles[] = $jobRole;

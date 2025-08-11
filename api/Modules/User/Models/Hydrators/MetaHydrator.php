@@ -20,8 +20,11 @@ class MetaHydrator
 
     public static function hydrateDepartmentListForCollection(array $rows): DepartmentCollection
     {
-        $items = array_map([self::class, 'hydrateDepartmentForCollection'], $rows);
-        return new DepartmentCollection($items);
+        $departments = new DepartmentCollection();
+        foreach ($rows as $department) {
+            $departments->add($department);
+        }
+        return $departments;
     }
 
     public static function hydrateJobRoleForCollection(array $data): UserJobRole
@@ -33,8 +36,11 @@ class MetaHydrator
 
     public static function hydrateJobRoleListForCollection(array $rows): JobRoleCollection
     {
-        $items = array_map([self::class, 'hydrateJobRoleForCollection'], $rows);
-        return new JobRoleCollection($items);
+        $jobRoles = new JobRoleCollection();
+        foreach ($rows as $jobRole) {
+            $jobRoles->add($jobRole);
+        }
+        return $jobRoles;
     }
 
     public static function hydrateLocationForCollection(array $data): UserLocation
@@ -45,7 +51,10 @@ class MetaHydrator
 
     public static function hydrateLocationListForCollection(array $rows): LocationCollection
     {
-        $items = array_map([self::class, 'hydrateLocationForCollection'], $rows);
-        return new LocationCollection($items);
+        $locations = new LocationCollection();
+        foreach ($rows as $location) {
+            $locations->add($location);
+        }
+        return $locations;
     }
 }
