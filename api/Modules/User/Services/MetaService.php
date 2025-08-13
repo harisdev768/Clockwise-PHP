@@ -1,19 +1,14 @@
 <?php
-
 namespace App\Modules\User\Services;
 
-
-use App\Modules\User\Models\Hydrators\MetaHydrator;
 use App\Modules\User\Models\Mappers\MetaMapper;
 
 
 class MetaService{
-    private MetaHydrator $hydrator;
     private MetaMapper $mapper;
 
-    public function __construct(MetaHydrator $hydrator, MetaMapper $mapper)
+    public function __construct(MetaMapper $mapper)
     {
-        $this->hydrator = $hydrator;
         $this->mapper = $mapper;
     }
 

@@ -5,12 +5,12 @@ use App\Modules\User\Exceptions\MetaException;
 use App\Modules\User\Models\Collections\DepartmentCollection;
 use App\Modules\User\Models\Collections\JobRoleCollection;
 use App\Modules\User\Models\Collections\LocationCollection;
-use App\Modules\User\Models\Hydrators\MetaHydrator;
+use App\Modules\User\Models\Hydrators\DepartmentHydrator;
+use App\Modules\User\Models\Hydrators\JobRoleHydrator;
+use App\Modules\User\Models\Hydrators\LocationHydrator;
 use App\Modules\User\Models\Hydrators\UserHydrator;
-use App\Modules\User\Models\User;
 use App\Config\DB;
 use App\Modules\User\Models\Collections\UserCollection;
-use App\Modules\User\Models\UserId;
 use PDO;
 
 class MetaMapper
@@ -45,7 +45,7 @@ class MetaMapper
 
         $departmentsCollection = new DepartmentCollection();
         foreach ($rows as $row) {
-            $departmentsCollection->add(MetaHydrator::hydrateDepartmentForCollection($row));
+            $departmentsCollection->add(DepartmentHydrator::hydrate($row));
         }
         return $departmentsCollection;
     }
@@ -58,7 +58,7 @@ class MetaMapper
 
         $jobRolesCollection = new JobRoleCollection();
         foreach ($rows as $row) {
-            $jobRolesCollection->add(MetaHydrator::hydrateJobRoleForCollection($row));
+            $jobRolesCollection->add(JobRoleHydrator::hydrate($row));
         }
 
         return $jobRolesCollection;
@@ -71,7 +71,7 @@ class MetaMapper
 
         $locationsCollection = new LocationCollection();
         foreach ($rows as $row) {
-            $locationsCollection->add(MetaHydrator::hydrateLocationForCollection($row));
+            $locationsCollection->add(LocationHydrator::hydrate($row));
         }
 
         return $locationsCollection;
