@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\User\Controllers;
 
+use App\Modules\User\Request\GetUserRequest;
 use App\Modules\User\UseCases\GetUserUseCase;
 
 class GetUserController{
@@ -11,8 +12,8 @@ class GetUserController{
         $this->useCase = $useCase;
     }
 
-    public function handle(): void
+    public function handle($data): void
     {
-        $this->useCase->execute();
+        $this->useCase->execute( new GetUserRequest($data) );
     }
 }

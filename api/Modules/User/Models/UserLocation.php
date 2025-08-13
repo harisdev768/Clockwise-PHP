@@ -17,11 +17,9 @@ class UserLocation {
         $this->locationId = $locationId;
         $this->locationName = $this->locations[$locationId] ?? 'Unknown';
     }
-
     public function getLocationId(): int {
         return $this->locationId;
     }
-
     public function getLocationName(): string {
         return $this->locationName;
     }

@@ -62,8 +62,8 @@ class User
     public function setLocation(UserLocation $location): void{ $this->location = $location;}
     public function setDepartment(UserDepartment $department): void{ $this->department = $department;}
     public function setUserJobRole(UserJobRole $jobRole): void{ $this->jobRole = $jobRole;}
-    public function setDeleted(bool $deleted): void{ $this->deleted = $deleted;}
     public function setLastLogin(string $lastLogin): void{ $this->lastLogin = $lastLogin;}
+    public function setDeleted(bool $deleted): void{ $this->deleted = $deleted;}
     public function getFirstName(): string { return $this->firstName; }
     public function getLastName(): string { return $this->lastName; }
     public function getEmail(): string { return $this->email; }
@@ -84,6 +84,6 @@ class User
     public function getJobRole(): ?UserJobRole { return $this->jobRole; }
     public function getDeleted(): bool{ return $this->deleted; }
     public function getDeletedToInt(): int{ return (int) $this->deleted; }
-    public function getlastLogin(): string{ return $this->lastLogin; }
+    public function getLastLogin(): string{ return $this->lastLogin; }
 
 }
