@@ -18,14 +18,6 @@ class MetaHydrator
         return $department;
     }
 
-    public static function hydrateDepartmentListForCollection(array $rows): DepartmentCollection
-    {
-        $departments = new DepartmentCollection();
-        foreach ($rows as $department) {
-            $departments->add($department);
-        }
-        return $departments;
-    }
 
     public static function hydrateJobRoleForCollection(array $data): UserJobRole
     {
@@ -34,27 +26,10 @@ class MetaHydrator
         return $jobRole;
     }
 
-    public static function hydrateJobRoleListForCollection(array $rows): JobRoleCollection
-    {
-        $jobRoles = new JobRoleCollection();
-        foreach ($rows as $jobRole) {
-            $jobRoles->add($jobRole);
-        }
-        return $jobRoles;
-    }
-
     public static function hydrateLocationForCollection(array $data): UserLocation
     {
         $location = new UserLocation((int) $data['id']);
         return $location;
     }
 
-    public static function hydrateLocationListForCollection(array $rows): LocationCollection
-    {
-        $locations = new LocationCollection();
-        foreach ($rows as $location) {
-            $locations->add($location);
-        }
-        return $locations;
-    }
 }

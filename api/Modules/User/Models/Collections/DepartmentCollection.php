@@ -1,28 +1,18 @@
 <?php
+
 namespace App\Modules\User\Models\Collections;
 
+use App\Core\Collections\AbstractCollection;
 use App\Modules\User\Models\UserDepartment;
 
-class DepartmentCollection
+class DepartmentCollection extends AbstractCollection
 {
-    private array $departments = [];
-
-    public function add(UserDepartment $department): void
+    public function mapItemToArray($item): array
     {
-        $this->departments[] = $department;
+        return [
+            'id' => $item->getDepartmentId(),
+            'name' => $item->getDepartmentName(),
+        ];
     }
 
-    public function toArray(): array
-    {
-        return array_map(function (UserDepartment $department) {
-            return [
-                'id'   => $department->getDepartmentId(),
-                'name' => $department->getDepartmentName(),
-            ];
-        }, $this->departments);
-    }
-   public function all(): array
-    {
-        return $this->departments;
-    }
 }

@@ -1,36 +1,18 @@
 <?php
+
 namespace App\Modules\User\Models\Collections;
 
+use App\Core\Collections\AbstractCollection;
 use App\Modules\User\Models\UserLocation;
 
-class LocationCollection
+class LocationCollection extends AbstractCollection
 {
-    private array $locations = [];
-
-    public function __construct(array $locations = [])
+    public function mapItemToArray($item): array
     {
-        foreach ($locations as $location) {
-            $this->add($location);
-        }
+        return [
+            'id' => $item->getLocationId(),
+            'name' => $item->getLocationName(),
+        ];
     }
 
-    public function add(UserLocation $location): void
-    {
-        $this->locations[] = $location;
-    }
-
-    public function toArray(): array
-    {
-        return array_map(function (UserLocation $location) {
-            return [
-                'id'   => $location->getLocationId(),
-                'name' => $location->getLocationName(),
-            ];
-        }, $this->locations);
-    }
-
-    public function all(): array
-    {
-        return $this->locations;
-    }
 }

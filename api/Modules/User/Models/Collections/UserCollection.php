@@ -1,47 +1,37 @@
 <?php
+
 namespace App\Modules\User\Models\Collections;
 
+use App\Core\Collections\AbstractCollection;
 use App\Modules\User\Models\User;
-class UserCollection
+
+class UserCollection extends AbstractCollection
 {
-    private array $users = [];
-
-    public function add(User $user): void
+    public function mapItemToArray($item): array
     {
-        $this->users[] = $user;
+        return [
+            'id' => $item->getUserId(),
+            'first_name' => $item->getFirstName(),
+            'last_name' => $item->getLastName(),
+            'email' => $item->getEmail(),
+            'username' => $item->getUsername(),
+            'nickname' => $item->getNickname(),
+            'cellphone' => $item->getCellphone(),
+            'homephone' => $item->getHomePhone(),
+            'address' => $item->getAddress(),
+            'status' => $item->getStatus() ?? null,
+            'created_at' => $item->getCreatedAt() ?? null,
+            'role' => $item->getRole()->getRoleName() ?? null,
+            'role_id' => $item->getRole()->getRoleId() ?? null,
+            'delete_user' => $item->getDeleted(),
+            'location' => $item->getLocation()->getLocationId() ?? null,
+            'location_name' => $item->getLocation()->getLocationName() ?? null,
+            'department' => $item->getDepartment()->getDepartmentId() ?? null,
+            'department_name' => $item->getDepartment()->getDepartmentName() ?? null,
+            'jobrole' => $item->getJobRole()->getJobRoleId() ?? null,
+            'jobrole_name' => $item->getJobRole()->getJobRoleName() ?? null,
+            'last_login' => $item->getLastLogin() ?? null,
+        ];
     }
 
-    public function toArray(): array
-    {
-        return array_map(function (User $user) {
-            return [
-                'id'         => $user->getUserId(),
-                'first_name' => $user->getFirstName(),
-                'last_name'  => $user->getLastName(),
-                'email'      => $user->getEmail(),
-                'username'   => $user->getUsername(),
-                'nickname'   => $user->getNickname(),
-                'cellphone'  => $user->getCellphone(),
-                'homephone'  => $user->getHomePhone(),
-                'address'    => $user->getAddress(),
-                'status'     => $user->getStatus() ?? null,
-                'created_at' => $user->getCreatedAt() ?? null,
-                'role'       => $user->getRole()->getRoleName() ?? null,
-                'role_id'    => $user->getRole()->getRoleId() ?? null,
-                'delete_user' => $user->getDeleted(),
-                'location'    => $user->getLocation()->getLocationId() ?? null,
-                'location_name'=> $user->getLocation()->getLocationName() ?? null,
-                'department'  => $user->getDepartment()->getDepartmentId() ?? null,
-                'department_name'=> $user->getDepartment()->getDepartmentName() ?? null,
-                'jobrole'      => $user->getJobRole()->getJobRoleId() ?? null,
-                'jobrole_name' => $user->getJobRole()->getJobRoleName() ?? null,
-                'last_login'   => $user->getLastLogin() ?? null,
-            ];
-        }, $this->users);
-    }
-
-    public function all(): array
-    {
-        return $this->users;
-    }
 }

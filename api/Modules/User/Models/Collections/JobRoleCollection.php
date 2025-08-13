@@ -1,29 +1,18 @@
 <?php
+
 namespace App\Modules\User\Models\Collections;
 
+use App\Core\Collections\AbstractCollection;
 use App\Modules\User\Models\UserJobRole;
 
-class JobRoleCollection
+class JobRoleCollection extends AbstractCollection
 {
-    private array $jobRoles = [];
-
-    public function add(UserJobRole $jobRole): void
+    public function mapItemToArray($item): array
     {
-        $this->jobRoles[] = $jobRole;
+        return [
+            'id' => $item->getJobRoleId(),
+            'name' => $item->getJobRoleName(),
+        ];
     }
 
-    public function toArray(): array
-    {
-        return array_map(function (UserJobRole $jobRole) {
-            return [
-                'id'   => $jobRole->getJobRoleId(),
-                'name' => $jobRole->getJobRoleName(),
-            ];
-        }, $this->jobRoles);
-    }
-
-    public function all(): array
-    {
-        return $this->jobRoles;
-    }
 }
