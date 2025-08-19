@@ -6,9 +6,7 @@ use App\Modules\Login\Models\User;
 use App\Modules\Login\Exceptions\LoginException;
 
 class LoginUserService {
-
     private UserMapper $userMapper;
-
     public function __construct(UserMapper $userMapper) {
         $this->userMapper = $userMapper;
     }
@@ -22,9 +20,7 @@ class LoginUserService {
         return $userRes;
 
     }
-
     public function login(User $user): ?User {
-
 
         $userRes = $this->userMapper->findByIdentifier($user);
 
@@ -35,11 +31,9 @@ class LoginUserService {
             throw LoginException::deactivated();
         }
 
-
-
+        $this->userMapper->updateLastLogin($userRes);
         return $userRes;
 
     }
-
 
 }

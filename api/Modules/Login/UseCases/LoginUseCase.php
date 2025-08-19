@@ -15,13 +15,11 @@ class LoginUseCase {
     private LoginUserService $userService;
     private JWTService $jwtService;
     private UserTokenMapper $tokenMapper;
-
     public function __construct(LoginUserService $userService, JWTService $jwtService , UserTokenMapper $tokenMapper) {
         $this->userService = $userService;
         $this->jwtService = $jwtService;
         $this->tokenMapper = $tokenMapper;
     }
-
     public static function setCookie($token)
     {
         if(isset($token)){
@@ -39,7 +37,6 @@ class LoginUseCase {
             );
         }
     }
-
     public function execute(LoginRequest $request): LoginResponse {
 
         $user = new User();

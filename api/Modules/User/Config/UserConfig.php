@@ -9,7 +9,8 @@ return [
                 'clock_update',
                 'break_update',
                 'clock_status',
-                'add_note'
+                'add_note',
+                'get_meta',
             ],
         ],
         'Employee' => [
@@ -29,6 +30,7 @@ return [
         'clock_update',
         'break_update',
         'clock_status',
-        'add_note'
+        'add_note',
+        'get_meta',
     ],
 ];

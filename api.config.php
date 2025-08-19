@@ -1,8 +1,4 @@
 <?php
-
-// ==============================
-// FACTORIES
-// ==============================
 use App\Config\Container;
 use App\Core\Exceptions\ApiException;
 use App\Core\Http\Request;
@@ -25,10 +21,8 @@ use App\Modules\Login\Services\JWTService;
 use App\Modules\TimeClock\Requests\ClockRequest;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
+use App\Modules\User\Factories\GetMetaFactory;
 use App\Modules\User\Factories\GetUsersFactory;
-use App\Modules\User\Models\Hydrators\UserHydrator;
-use App\Modules\User\Models\User;
-use App\Modules\User\Response\EditUserResponse;
 use App\Modules\User\Factories\EditUserFactory;
 use App\Modules\TimeClock\Factories\ClockInFactory;
 use App\Modules\TimeClock\Factories\ClockOutFactory;
@@ -39,43 +33,8 @@ use App\Modules\TimeClock\Factories\ClockStatusFactory;
 use App\Modules\TimeClock\Exceptions\ClockStatusException;
 use \App\Modules\TimeClock\Exceptions\NotesException;
 use App\Modules\TimeClock\Factories\AddNoteFactory;
+use App\Modules\User\Exceptions\MetaException;
 
-
-// ==============================
-// CONTAINER
-// ==============================
-
-
-// ==============================
-// RESPONSE CLASSES
-// ==============================
-
-
-// ==============================
-// SERVICES
-// ==============================
-
-
-// ==============================
-// MAPPERS
-// ==============================
-
-
-// ==============================
-// REQUESTS
-// ==============================
-
-
-// ==============================
-// EXCEPTIONS
-// ==============================
-
-
-// ==============================
-// CONTAINER SETUP / BINDINGS
-// ==============================
-
-// Get or create singleton container instance
 $container ??= Container::getInstance();
 
 // Services
@@ -95,6 +54,7 @@ $container->bind(StartBreakFactory::class, fn() => new StartBreakFactory($contai
 $container->bind(EndBreakFactory::class, fn() => new EndBreakFactory($container));
 $container->bind(ClockStatusFactory::class, fn() => new ClockStatusFactory($container));
 $container->bind(AddNoteFactory::class, fn() => new AddNoteFactory($container));
+$container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -102,6 +62,9 @@ $container->bind(UserTokenMapper::class, new UserTokenMapper($container->get(PDO
 
 // Exceptions
 $container->bind(ApiException::class, fn() => new ApiException());
+$container->bind(UserException::class, fn() => new UserException());
+$container->bind(LoginException::class, fn() => new LoginException());
+$container->bind(MetaException::class, fn() => new MetaException());
 
 // Requests
 $container->bind(LoginRequest::class, fn() => new Request());
@@ -243,13 +206,28 @@ function handleGetUsers()
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if ($middleware->handle('get_users')) {
-
         $container = Container::getInstance();
-        $response = $container->get(GetUsersFactory::class)->handle();
+        $request = Container::getInstance()->get(Request::class);
+        $data = $request->all();
+        $container->get(GetUsersFactory::class)->handle($data);
     } else {
         throw UserException::notAllowed();
     }
 
+}
+
+function handleGetMeta(){
+
+    $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+    if ($middleware->handle('get_meta')) {
+        $container = Container::getInstance();
+        $container->get(GetMetaFactory::class)->handle();
+    }else{
+
+        throw MetaException::notAllowed();
+
+    }
 }
 
 function handleEditUser($userId)
