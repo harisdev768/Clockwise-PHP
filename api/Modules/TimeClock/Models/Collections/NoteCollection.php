@@ -1,29 +1,19 @@
 <?php
 namespace App\Modules\TimeClock\Models\Collections;
 
+use App\Core\Collections\AbstractCollection;
 use App\Modules\TimeClock\Models\Note;
 
-class NoteCollection{
-    private array $notes = [];
+class NoteCollection extends AbstractCollection
+{
 
-    public function add(Note $note): void
+    public function mapItemToArray($item): array
     {
-        $this->notes[] = $note;
+        return [
+            'note_id' => $item->getNoteId(),
+            'note' => $item->getNote(),
+            'note_at' => $item->getNotedAt(),
+        ];
     }
 
-    public function toArray(): array
-    {
-        return array_map(function (Note $note) {
-            return [
-                'note_id' => $note->getNoteId(),
-                'note' => $note->getNote(),
-                'note_at' => $note->getNotedAt(),
-            ];
-        }, $this->notes);
-    }
-
-    public function all(): array
-    {
-        return $this->notes;
-    }
 }
