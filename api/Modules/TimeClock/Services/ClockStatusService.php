@@ -27,12 +27,9 @@ class ClockStatusService
             return $status;
         }
 
-        $status = $this->mapper->fetchActiveBreak($status);
-
-        $status = $this->mapper->fetchEndedBreaks($status);
-
-        $status = $this->mapper->fetchNotes($status);
-
+        $this->mapper->fetchActiveBreak($status);
+        $this->mapper->fetchEndedBreaks($status);
+        $this->mapper->fetchNotes($status);
         return $status;
     }
 

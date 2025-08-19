@@ -38,9 +38,7 @@ class NoteMapper {
         $stmt->bindValue(':clock_id', $note->getClockId(), \PDO::PARAM_INT);
         $stmt->execute();
 
-        $data = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if ($data) {
+        if ($stmt->fetch(\PDO::FETCH_ASSOC)) {
             $note->setClockedIn(true);
         }
 

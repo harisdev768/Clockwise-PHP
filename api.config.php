@@ -155,7 +155,7 @@ function handleAddUser()
                 empty(trim($data['first_name'])) ||
                 empty(trim($data['last_name'])) ||
                 empty(trim($data['email'])) ||
-                empty(trim($data['username'])) ||
+                empty($data['username']) ||
                 empty(trim($data['password'])) ||
                 empty(trim($data['role_id']))
             ) {
