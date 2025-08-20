@@ -1,4 +1,5 @@
 <?php
+
 use App\Config\Container;
 use App\Core\Exceptions\ApiException;
 use App\Core\Http\Request;
@@ -24,6 +25,7 @@ use App\Modules\User\Factories\GetMetaFactory;
 use App\Modules\User\Factories\GetUsersFactory;
 use App\Modules\User\Factories\EditUserFactory;
 use App\Modules\User\Exceptions\MetaException;
+use App\Modules\TimeSheet\Factories\GetTimeSheetFactory;
 
 $container ??= Container::getInstance();
 
@@ -36,9 +38,10 @@ $container->bind(ForgotPasswordFactory::class, fn() => new ForgotPasswordFactory
 $container->bind(ResetPasswordFactory::class, fn() => new ResetPasswordFactory($container));
 $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
-$container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container) );
+$container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container));
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
 $container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
+$container->bind(GetTimeSheetFactory::class, fn() => new GetTimeSheetFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -87,6 +90,7 @@ function handleLogin()
     }
 
 }
+
 function handleAddUser()
 {
     try {
@@ -98,12 +102,12 @@ function handleAddUser()
             $data = $container->get(Request::class)->all();
 
             if (
-                empty( trim($data['first_name'])) ||
-                empty( trim($data['last_name'])) ||
-                empty( trim($data['email'])) ||
-                empty( trim($data['username'])) ||
-                empty( trim($data['password'])) ||
-                empty( trim($data['role_id']))
+                empty(trim($data['first_name'])) ||
+                empty(trim($data['last_name'])) ||
+                empty(trim($data['email'])) ||
+                empty(trim($data['username'])) ||
+                empty(trim($data['password'])) ||
+                empty(trim($data['role_id']))
             ) {
                 throw UserException::missingCredentials();
             }
@@ -121,8 +125,7 @@ function handleAddUser()
         } else {
             throw UserException::notAllowed();
         }
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
         echo json_encode([
@@ -177,7 +180,7 @@ function handleResetPassword()
     $token = $data['token'];
     $newPassword = $data['new_password'];
 
-    if ( empty($token) || empty($newPassword) ) {
+    if (empty($token) || empty($newPassword)) {
         throw ResetPasswordException::missingCredentials();
     }
 
@@ -200,14 +203,15 @@ function handleGetUsers()
 
 }
 
-function handleGetMeta(){
+function handleGetMeta()
+{
 
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if ($middleware->handle('get_meta')) {
         $container = Container::getInstance();
         $container->get(GetMetaFactory::class)->handle();
-    }else{
+    } else {
 
         throw MetaException::notAllowed();
 
@@ -243,7 +247,7 @@ function handleEditUser($userId)
 
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code((int) ($e->getCode() ?: 500));
+        http_response_code((int)($e->getCode() ?: 500));
         header('Content-Type: application/json');
         echo json_encode([
             'success' => false,
@@ -253,3 +257,8 @@ function handleEditUser($userId)
 
 }
 
+function handleGetTimesheet()
+{
+    $container = Container::getInstance();
+    $container->get(GetTimeSheetFactory::class)->handle();
+}
