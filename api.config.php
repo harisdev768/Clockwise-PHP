@@ -135,7 +135,7 @@ function handleAddUser()
 function handleLogout()
 {
     setcookie('jwt', '', [
-        'expires' => time() - 3600,  // Expire in the past
+        'expires' => time() - 36000,  // Expire in the past
         'path' => '/',
         'domain' => 'localhost',     // EXACT same as when set
         'secure' => false,

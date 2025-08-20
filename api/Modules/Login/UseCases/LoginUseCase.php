@@ -27,7 +27,7 @@ class LoginUseCase {
                 'jwt',          // Cookie name
                 $token,                // JWT token
                 [
-                    'expires' => time() + 3600,       // 1 hour
+                    'expires' => time() + 36000,       // 10 hours
                     'path' => '/',
                     'domain' => 'localhost',   //  'clockwise.local' for index.html
                     'secure' => false,               // Set to true if using HTTPS
