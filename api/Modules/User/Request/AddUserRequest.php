@@ -29,10 +29,10 @@ class AddUserRequest
         $this->firstName = trim($data['first_name']);
         $this->lastName = trim($data['last_name']);
         $this->email = trim($data['email']);
-        $this->username = trim($data['username']);
+        $this->username = $data['username'];
         $this->created_by = trim($data['created_by']);
         $this->role_id = trim($data['role_id']);
-        $this->password = trim($data['password']);
+        $this->password = ($data['password']);
         if(!empty($this->password)){
             $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         }
