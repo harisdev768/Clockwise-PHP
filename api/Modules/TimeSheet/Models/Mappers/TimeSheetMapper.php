@@ -18,22 +18,25 @@ class TimeSheetMapper
 
     public function fetchAll(): timeSheetCollection
     {
-        $sql = "SELECT t.id, t.user_id, t.clock_in, t.clock_out, u.username , u.first_name, u.last_name, u.id 
-                FROM clock_entries t
-                JOIN users u ON u.id = t.user_id";
+        $sql = "SELECT 
+        t . id as clock_entry_id, 
+        t . user_id, 
+        t . clock_in, 
+        t . clock_out, 
+        u . id as user_id, 
+        u . username, 
+        u . first_name, 
+        u . last_name
+    FROM clock_entries t
+    JOIN users u ON u . id = t . user_id";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $timeSheetCollection = new TimeSheetCollection();
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $timesheet = new TimeSheet();
-            $timesheet->setId($row['id']);
-            $timesheet->setUserId($row['user_id']);
-            $timesheet->setClockIn(new \DateTime($row['clock_in']));
-            $timesheet->setClockOut($row['clock_out'] ? new \DateTime($row['clock_out']) : null);
-            $timesheet->setUserName($row['username']); // from users table
 
-            $timeSheetCollection->add($timesheet);
+
+            $timeSheetCollection->add(TimeSheetHydrator::hydrate($row));
         }
         return $timeSheetCollection;
     }

@@ -8,10 +8,11 @@ class TimeSheet
     private int $id;
     private int $userId;
     private string $userName;
+    private string $fullName;
     private DateTime $clockIn;
     private ?DateTime $clockOut;
-    private ?string $totalShift;
-    private ?string $breakDuration;
+    private ?string $totalShift = null;
+    private ?string $breakDuration = null;
 
     public function setId(int $id): void
     {
@@ -41,6 +42,14 @@ class TimeSheet
     public function getUserName(): string
     {
         return $this->userName;
+    }
+    public function setFullName(string $fullName): void
+    {
+        $this->fullName = $fullName;
+    }
+    public function getFullName(): string
+    {
+        return $this->fullName;
     }
 
     public function setClockIn(DateTime $clockIn): void
