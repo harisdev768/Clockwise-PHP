@@ -1,4 +1,5 @@
 <?php
+
 use App\Config\Container;
 use App\Core\Exceptions\ApiException;
 use App\Core\Http\Request;
@@ -34,6 +35,7 @@ use App\Modules\TimeClock\Exceptions\ClockStatusException;
 use \App\Modules\TimeClock\Exceptions\NotesException;
 use App\Modules\TimeClock\Factories\AddNoteFactory;
 use App\Modules\User\Exceptions\MetaException;
+use App\Modules\TimeSheet\Factories\GetTimeSheetFactory;
 
 $container ??= Container::getInstance();
 
@@ -55,6 +57,7 @@ $container->bind(EndBreakFactory::class, fn() => new EndBreakFactory($container)
 $container->bind(ClockStatusFactory::class, fn() => new ClockStatusFactory($container));
 $container->bind(AddNoteFactory::class, fn() => new AddNoteFactory($container));
 $container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
+$container->bind(GetTimeSheetFactory::class, fn() => new GetTimeSheetFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -118,7 +121,7 @@ function handleAddUser()
                 empty(trim($data['first_name'])) ||
                 empty(trim($data['last_name'])) ||
                 empty(trim($data['email'])) ||
-                empty($data['username']) ||
+                empty(trim($data['username'])) ||
                 empty(trim($data['password'])) ||
                 empty(trim($data['role_id']))
             ) {
@@ -216,14 +219,15 @@ function handleGetUsers()
 
 }
 
-function handleGetMeta(){
+function handleGetMeta()
+{
 
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if ($middleware->handle('get_meta')) {
         $container = Container::getInstance();
         $container->get(GetMetaFactory::class)->handle();
-    }else{
+    } else {
 
         throw MetaException::notAllowed();
 
@@ -269,137 +273,8 @@ function handleEditUser($userId)
 
 }
 
-function handleClock()
+function handleGetTimesheet()
 {
-    try {
-        $middleware = Container::getInstance()->get(AuthMiddleware::class);
-
-        if ($middleware->handle('clock_update')) {
-            $request = Container::getInstance()->get(Request::class);
-            $data = $request->all();
-
-            if (empty($data['user_id'])) {
-                throw ClockInException::userIdMissing();
-            }
-            if (empty($data['action'])) {
-                throw ClockInException::userActionMissing();
-            }
-
-            if ($data['action'] === 'in') {
-                $factory = Container::getInstance()->get(ClockInFactory::class);
-                $factory->handleClockIn($data);
-            } else if ($data['action'] === 'out') {
-                $factory = Container::getInstance()->get(ClockOutFactory::class);
-                $factory->handleClockOut($data);
-            }
-        }
-        throw UserException::notAllowed();
-    } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
-    }
-
-}
-
-function handleBreak()
-{
-    try {
-        $middleware = Container::getInstance()->get(AuthMiddleware::class);
-
-        if ($middleware->handle('break_update')) {
-            $request = Container::getInstance()->get(Request::class);
-            $data = $request->all();
-
-            if (empty($data['user_id'])) {
-                throw ClockInException::userIdMissing();
-            }
-            if (empty($data['action'])) {
-                throw ClockInException::userActionMissing();
-            }
-
-            if ($data['action'] === 'start') {
-                $factory = Container::getInstance()->get(StartBreakFactory::class);
-                $factory->handleStartBreak($data);
-            } else if ($data['action'] === 'end') {
-                $factory = Container::getInstance()->get(EndBreakFactory::class);
-                $factory->handleEndBreak($data);
-            }
-        }
-        throw UserException::notAllowed();
-    } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
-    }
-}
-
-function handleClockStatus()
-{
-
-    try {
-        $middleware = Container::getInstance()->get(AuthMiddleware::class);
-
-        if ($middleware->handle('clock_status')) {
-            $request = Container::getInstance()->get(Request::class);
-            $data = $request->all();
-
-            if (empty($data['user_id'])) {
-                throw ClockStatusException::userIdMissing();
-            }
-
-            $container = Container::getInstance();
-            $response = $container->get(ClockStatusFactory::class)->handle($data);
-        }
-        throw UserException::notAllowed();
-    } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
-    }
-
-}
-
-function handleAddNote()
-{
-    try {
-        $middleware = Container::getInstance()->get(AuthMiddleware::class);
-
-        if ($middleware->handle('add_note')) {
-            $request = Container::getInstance()->get(Request::class);
-            $data = $request->all();
-
-            if (empty($data['clock_id'])) {
-                throw NotesException::notClockedIn();
-            }
-            if (empty($data['user_id'])) {
-                throw NotesException::userIdMissing();
-            }
-            if (empty($data['note'])) {
-                throw NotesException::notesEmpty();
-            }
-            if (strlen($data['note']) > 512) {
-                throw NotesException::notesTooLong();
-            }
-            $container = Container::getInstance();
-            $container->get(AddNoteFactory::class)->handleAddNotes($data);
-        }
-        throw UserException::notAllowed();
-    } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
-    }
+    $container = Container::getInstance();
+    $container->get(GetTimeSheetFactory::class)->handle();
 }
