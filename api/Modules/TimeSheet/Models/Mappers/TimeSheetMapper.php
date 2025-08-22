@@ -20,26 +20,43 @@ class TimeSheetMapper
     public function fetchAll(): TimeSheetCollection
     {
         $sql = "
-        SELECT 
-            t.id as clock_entry_id,
-            t.user_id,
-            t.clock_in,
-            t.clock_out,
-            u.id as user_id,
-            u.username,
-            u.first_name,
-            u.last_name,
-            u.role_id,
-            u.job_role_id as position_id,
-            u.location_id,
-            b.id as break_id,
-            b.started_at as break_in,
-            b.ended_at as break_out
-        FROM clock_entries t
-        JOIN users u ON u.id = t.user_id
-        LEFT JOIN break_entries b ON b.clock_id = t.id
-        ORDER BY t.id, b.id
-    ";
+    SELECT 
+        t.id AS clock_entry_id,
+        t.user_id,
+        t.clock_in,
+        t.clock_out,
+        t.status,
+        t.deleted,
+        
+        u.id AS uid,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.role_id,
+        ur.role_name,
+        u.job_role_id AS position_id,
+        jr.name AS position_name,
+        u.department_id,
+        d.name AS department_name,
+        u.location_id,
+        l.name AS location_name,
+        
+        b.id AS break_id,
+        b.started_at AS break_in,
+        b.ended_at AS break_out
+        
+    FROM clock_entries t
+    JOIN users u ON u.id = t.user_id
+    LEFT JOIN break_entries b ON b.clock_id = t.id
+    LEFT JOIN user_roles ur ON ur.role_id = u.role_id
+    LEFT JOIN job_roles jr ON jr.id = u.job_role_id
+    LEFT JOIN departments d ON d.id = u.department_id
+    LEFT JOIN locations l ON l.id = u.location_id
+    
+    WHERE t.deleted = 0
+    ORDER BY t.id, b.id
+";
+
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
