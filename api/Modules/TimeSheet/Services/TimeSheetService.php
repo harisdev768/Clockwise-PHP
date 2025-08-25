@@ -17,4 +17,9 @@ class TimeSheetService
     {
         return $this->mapper->fetchAll();
     }
+
+    public function getAllTimeSheetsWithParams($filter)
+    {
+        return $this->mapper->fetchAllWithParams($filter);
+    }
 }

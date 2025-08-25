@@ -1,6 +1,9 @@
 <?php
+
 namespace App\Modules\TimeSheet\UseCases;
 
+use App\Modules\TimeSheet\Models\TimeSheetSearchFilter;
+use App\Modules\TimeSheet\Request\GetTimeSheetRequest;
 use App\Modules\TimeSheet\Response\GetTimeSheetResponse;
 use App\Modules\TimeSheet\Services\TimeSheetService;
 use App\Modules\TimeSheet\Models\Collections\TimeSheetCollection;
@@ -14,9 +17,26 @@ class GetTimeSheetUseCase
         $this->service = $service;
     }
 
-    public function execute(): TimeSheetCollection
+    public function execute(GetTimeSheetRequest $request): GetTimeSheetResponse
     {
-        GetTimeSheetResponse::success($this->service->getAllTimeSheets()->toArray());
-        return $this->service->getAllTimeSheets();
+        $filter = new TimeSheetSearchFilter();
+
+        if($request->getKeyword() !== null) {
+            $filter->setKeyword($request->getKeyword());
+        }
+        if(!empty($request->getDepartmentId())) {
+            $filter->setDepartmentId((int)$request->getDepartmentId());
+        }
+        if($request->getJobRoleId() !== null) {
+            $filter->setJobRoleId((int)$request->getJobRoleId());
+        }
+        if($request->getLocationId() !== null) {
+            $filter->setLocationId((int)$request->getLocationId());
+        }
+
+        $users = !$filter->isEmpty()
+            ? $this->service->getAllTimeSheetsWithParams($filter)
+            : $this->service->getAllTimeSheets();
+        return GetTimeSheetResponse::success($users->toArray());
     }
 }

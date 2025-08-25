@@ -260,5 +260,7 @@ function handleEditUser($userId)
 function handleGetTimesheet()
 {
     $container = Container::getInstance();
-    $container->get(GetTimeSheetFactory::class)->handle();
+    $request = Container::getInstance()->get(Request::class);
+    $data = $request->all();
+    $container->get(GetTimeSheetFactory::class)->handle($data);
 }

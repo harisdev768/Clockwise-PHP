@@ -12,10 +12,10 @@ class GetTimeSheetFactory{
         $this->container = $container;
     }
 
-    public function handle()
+    public function handle($data)
     {
         $controller = $this->container->get(GetTimeSheetController::class);
-        $controller->handle();
+        $controller->handle($data);
     }
 
 }
