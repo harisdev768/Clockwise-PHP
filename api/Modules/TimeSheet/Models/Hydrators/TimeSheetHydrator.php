@@ -20,6 +20,12 @@ class TimeSheetHydrator
         $timeSheet->setFullName($row['first_name'] . " " . $row['last_name']);
         $timeSheet->setClockIn(new \DateTime($row['clock_in']));
         $timeSheet->setClockOut($row['clock_out'] ? new \DateTime($row['clock_out']) : null);
+        $timeSheet->setStatus((bool)$row['status']);
+        $timeSheet->setDeleted((bool)$row['deleted']);
+        $timeSheet->setLocation($row['location_name']);
+        $timeSheet->setRole($row['role_name']);
+        $timeSheet->setPosition($row['position_name']);
+        $timeSheet->setDepartment($row['department_name']);
 
         $shiftSeconds = 0;
         if ($timeSheet->getClockOut()) {
