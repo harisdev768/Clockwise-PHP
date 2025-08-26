@@ -4,6 +4,7 @@ namespace App\Modules\TimeSheet\Models\Mappers;
 
 use App\Modules\TimeSheet\Models\Collections\BreakCollection;
 use App\Modules\TimeSheet\Models\TimeSheetSearchFilter;
+use App\Modules\TimeSheet\Models\TimeSheetStatus;
 use PDO;
 use App\Modules\TimeSheet\Models\Collections\TimeSheetCollection;
 use App\Modules\TimeSheet\Models\Hydrators\TimeSheetHydrator;
@@ -205,5 +206,20 @@ class TimeSheetMapper
         return $timeSheetCollection;
     }
 
+    public function updateClockStatus(TimeSheetStatus $status): TimeSheetStatus
+    {
+        $sql = "UPDATE clock_entries SET status = :status WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
 
+        $stmt->bindValue(':status', $status->getStatus(), PDO::PARAM_BOOL);
+        $stmt->bindValue(':id', $status->getClockId(), PDO::PARAM_INT);
+
+        $updatedStatus = $stmt->execute();
+
+        if($updatedStatus){
+            return $status;
+        }else{
+            return new TimeSheetStatus();
+        }
+    }
 }

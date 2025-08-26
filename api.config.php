@@ -19,6 +19,7 @@ use App\Modules\Login\Models\Mappers\UserTokenMapper;
 use App\Modules\Login\Requests\CookieRequest;
 use App\Modules\Login\Requests\LoginRequest;
 use App\Modules\Login\Services\JWTService;
+use App\Modules\TimeSheet\Exceptions\TimeSheetException;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
 use App\Modules\User\Factories\GetMetaFactory;
@@ -26,6 +27,7 @@ use App\Modules\User\Factories\GetUsersFactory;
 use App\Modules\User\Factories\EditUserFactory;
 use App\Modules\User\Exceptions\MetaException;
 use App\Modules\TimeSheet\Factories\GetTimeSheetFactory;
+use App\Modules\TimeSheet\Factories\TimeSheetApprovalFactory;
 
 $container ??= Container::getInstance();
 
@@ -42,6 +44,7 @@ $container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container)
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
 $container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
 $container->bind(GetTimeSheetFactory::class, fn() => new GetTimeSheetFactory($container));
+$container->bind(TimeSheetApprovalFactory::class, fn() => new TimeSheetApprovalFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -263,4 +266,23 @@ function handleGetTimesheet()
     $request = Container::getInstance()->get(Request::class);
     $data = $request->all();
     $container->get(GetTimeSheetFactory::class)->handle($data);
+}
+
+function handleTimesheetApproval()
+{
+    $container = Container::getInstance();
+    $request = Container::getInstance()->get(Request::class);
+    $data = $request->all();
+    $id = $data['id'] ?? null;
+    $status = $data['status'] ?? null;
+    if (!$id) {
+       throw TimeSheetException::clockIdMissing();
+    }
+    if ($status === null) {
+        throw TimeSheetException::timeSheetStatusMissing();
+    }
+
+    $container->get(TimeSheetApprovalFactory::class)->handle($data);
+
+
 }

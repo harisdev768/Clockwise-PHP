@@ -14,3 +14,4 @@ $router->add('POST', '/add-user', fn() => handleAddUser());
 $router->add('GET', '/get-users', fn() => handleGetUsers());
 $router->add('GET','/get-meta', fn() => handleGetMeta());
 $router->add('GET', '/get-timesheet', fn() => handleGetTimesheet());
+$router->add('POST', '/timesheet-status', fn() => handleTimesheetApproval());

@@ -3,6 +3,8 @@ namespace App\Modules\TimeSheet\Services;
 
 use App\Modules\TimeSheet\Models\Mappers\TimeSheetMapper;
 use App\Modules\TimeSheet\Models\Collections\TimeSheetCollection;
+use App\Modules\TimeSheet\Models\TimeSheet;
+use App\Modules\TimeSheet\Models\TimeSheetStatus;
 
 class TimeSheetService
 {
@@ -21,5 +23,10 @@ class TimeSheetService
     public function getAllTimeSheetsWithParams($filter)
     {
         return $this->mapper->fetchAllWithParams($filter);
+    }
+
+    public function updateTimesheetStatus(TimeSheetStatus $status): TimeSheetStatus
+    {
+        return $this->mapper->updateClockStatus($status);
     }
 }

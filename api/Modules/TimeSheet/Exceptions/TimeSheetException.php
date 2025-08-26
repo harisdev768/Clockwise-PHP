@@ -35,55 +35,16 @@ class TimeSheetException extends Exception
         return new self("All fields are required.", 422);
     }
 
-    public static function emailFormat(): self
-    {
-        return new self("Invalid email format.", 422);
-    }
-    public static function emailExists(): self
-    {
-        return new self("Email Already Exist.", 422);
-    }
-    public static function userExists(): self
-    {
-        return new self("Username Already Exist. ", 422);
-    }
-    public static function userAlreadyExists(): self
-    {
-        return new self("User Already Exist! Change Username or Email. ", 422);
+    public static function clockIdMissing(): self{
+        return new self("Clock ID is Required.", 422);
     }
 
-    public static function passwordFormat(): self
-    {
-        return new self("Password must be at least 6 characters.", 422);
-    }
-    public static function unauthorized(): self
-    {
-        return new self("Invalid Credentials", 401);
+    public static function editClockFailed(): self{
+        return new self("Failed to edit TimeSheet.", 422);
     }
 
-    public static function userNotAdded(): self
-    {
-        return new self("Try Again Later! Something went wrong.", 422);
-    }
-
-    public static function notAllowed(): self{
-        return new self("Not allowed.", 422);
-    }
-
-    public static function roleNotFound(): self{
-        return new self("Role not found.", 422);
-    }
-
-    public static function notFound(): self{
-        return new self("Users not found.", 422);
-    }
-
-    public static function userIdMissing(): self{
-        return new self("User id is Required.", 422);
-    }
-
-    public static function editUserFailed(): self{
-        return new self("Failed to edit user.", 422);
+    public static function timeSheetStatusMissing(): self{
+        return new self("Time Sheet Status Missing.", 422);
     }
 
 }
