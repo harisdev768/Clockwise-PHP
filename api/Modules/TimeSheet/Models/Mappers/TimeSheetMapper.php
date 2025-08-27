@@ -169,8 +169,19 @@ class TimeSheetMapper
             $params[':job_role_id'] = (int)$jobRoleId;
             $types[':job_role_id'] = PDO::PARAM_INT;
         }
+        // Date range filter
+        $startDate = $filter->getStartDate();
+        $endDate = $filter->getEndDate();
+        if ($startDate !== null && $endDate !== null) {
+            $sql .= " AND t.clock_in BETWEEN :start_date AND :end_date";
+            $params[':start_date'] = $startDate->format('Y-m-d 00:00:00');
+            $params[':end_date'] = $endDate->format('Y-m-d 23:59:59');
+            $types[':start_date'] = PDO::PARAM_STR;
+            $types[':end_date'] = PDO::PARAM_STR;
+        }
 
-        $sql .= " ORDER BY t.id, b.id";
+        $sql .= " ORDER BY t.clock_in DESC";
+
 
         $stmt = $this->db->prepare($sql);
         foreach ($params as $name => $value) {
@@ -216,9 +227,9 @@ class TimeSheetMapper
 
         $updatedStatus = $stmt->execute();
 
-        if($updatedStatus){
+        if ($updatedStatus) {
             return $status;
-        }else{
+        } else {
             return new TimeSheetStatus();
         }
     }
