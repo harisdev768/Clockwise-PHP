@@ -262,27 +262,56 @@ function handleEditUser($userId)
 
 function handleGetTimesheet()
 {
-    $container = Container::getInstance();
-    $request = Container::getInstance()->get(Request::class);
-    $data = $request->all();
-    $container->get(GetTimeSheetFactory::class)->handle($data);
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('get_timesheet')) {
+            $container = Container::getInstance();
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+            $container->get(GetTimeSheetFactory::class)->handle($data);
+        }
+
+        throw UserException::notAllowed();
+
+    } catch (\Exception $e) {
+        http_response_code((int)($e->getCode() ?: 500));
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
 }
 
 function handleTimesheetApproval()
 {
-    $container = Container::getInstance();
-    $request = Container::getInstance()->get(Request::class);
-    $data = $request->all();
-    $id = $data['id'] ?? null;
-    $status = $data['status'] ?? null;
-    if (!$id) {
-       throw TimeSheetException::clockIdMissing();
-    }
-    if ($status === null) {
-        throw TimeSheetException::timeSheetStatusMissing();
-    }
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
-    $container->get(TimeSheetApprovalFactory::class)->handle($data);
+        if ($middleware->handle('get_timesheet')) {
+            $container = Container::getInstance();
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+            $id = $data['id'] ?? null;
+            $status = $data['status'] ?? null;
+            if (!$id) {
+                throw TimeSheetException::clockIdMissing();
+            }
+            if ($status === null) {
+                throw TimeSheetException::timeSheetStatusMissing();
+            }
 
+            $container->get(TimeSheetApprovalFactory::class)->handle($data);
+        }
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code((int)($e->getCode() ?: 500));
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
 
 }

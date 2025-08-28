@@ -7,6 +7,8 @@ return [
                 'edit_user',
                 'get_users',
                 'get_meta',
+                'get_timesheet',
+                'approve_timesheet',
             ],
         ],
         'Employee' => [
@@ -20,5 +22,7 @@ return [
         'edit_user',
         'get_users',
         'get_meta',
+        'get_timesheet',
+        'approve_timesheet',
     ],
 ];
