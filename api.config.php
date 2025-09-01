@@ -96,10 +96,7 @@ function handleLogin()
 
         // Return a JSON response
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 
 }
@@ -119,7 +116,7 @@ function handleAddUser()
                 empty(trim($data['last_name'])) ||
                 empty(trim($data['email'])) ||
                 empty($data['username']) ||
-                empty(trim($data['password'])) ||
+                empty($data['password']) ||
                 empty(trim($data['role_id']))
             ) {
                 throw UserException::missingCredentials();
@@ -141,10 +138,7 @@ function handleAddUser()
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 }
 
@@ -261,10 +255,7 @@ function handleEditUser($userId)
     } catch (\Exception $e) {
         http_response_code((int)($e->getCode() ?: 500));
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 
 }
@@ -297,10 +288,7 @@ function handleClock()
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 
 }
@@ -333,10 +321,7 @@ function handleBreak()
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 }
 
@@ -361,10 +346,7 @@ function handleClockStatus()
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 
 }
@@ -397,9 +379,6 @@ function handleAddNote()
     } catch (\Exception $e) {
         http_response_code($e->getCode() ?: 500);
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 }
