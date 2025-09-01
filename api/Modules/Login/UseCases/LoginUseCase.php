@@ -24,15 +24,15 @@ class LoginUseCase {
     {
         if(isset($token)){
             setcookie(
-                'jwt',          // Cookie name
-                $token,                // JWT token
+                'jwt',
+                $token,
                 [
-                    'expires' => time() + 3600,       // 1 hour
+                    'expires' => time() + 3600,
                     'path' => '/',
-                    'domain' => 'localhost',   //  'clockwise.local' for index.html
-                    'secure' => false,               // Set to true if using HTTPS
+                    'domain' => 'localhost',
+                    'secure' => false,
                     'httponly' => true,
-                    'samesite' => 'Lax',           // or 'None' with secure
+                    'samesite' => 'Lax',
                 ]
             );
         }

@@ -157,7 +157,7 @@
             if (data.success) {
                 message.style.color = 'green';
                 message.textContent = 'Login successful!';
-                await checkLoginStatus(); // 🔁 refresh UI after login
+                await checkLoginStatus();
             } else {
                 message.textContent = data.message || 'Login failed';
             }

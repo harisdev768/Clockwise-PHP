@@ -1,5 +1,4 @@
 <?php
-// App configuration
 
     $host = 'localhost';
     $db   = 'clockwise';
@@ -7,11 +6,9 @@
     $pass = 'Loc@lhost';
 
 
-// Base URL for API (optional, useful if you're building links)
 define('BASE_URL', 'http://clockwise.local/api-2/');
 
 
-// File: config.php
 
 return [
     'db' => [

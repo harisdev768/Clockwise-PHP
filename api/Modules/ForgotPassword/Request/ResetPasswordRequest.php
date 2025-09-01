@@ -17,7 +17,6 @@ class ResetPasswordRequest
         $this->newPassword = trim($newPassword);
     }
 
-    //Get all request data
     public function all(): array
     {
         return $this->data;

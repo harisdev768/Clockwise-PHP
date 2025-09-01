@@ -9,9 +9,9 @@ class User {
     private string $firstName;
     private string $lastName;
     private string $identifier = '';
-    private string $email = '';    // Initialize with an empty string
-    private string $password = ''; // Initialize with an empty string
-    private string $username = ''; // Initialize with an empty string
+    private string $email = '';
+    private string $password = '';
+    private string $username = '';
     private int $roleId;
     private string $createdAt;
     private ?string $lastLogin;
@@ -28,7 +28,7 @@ class User {
         return $this->identifier;
     }
 
-    public function userExists(): bool{ //
+    public function userExists(): bool{
         if ( is_null($this->userID) ){
             return false;
         }

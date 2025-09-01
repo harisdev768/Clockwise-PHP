@@ -9,7 +9,7 @@ class ApiException extends Exception
 
     public function __construct(string $message = "Bad Request", int $statusCode = 400)
     {
-        parent::__construct($message);
+        parent::__construct($message,$statusCode);
         $this->statusCode = $statusCode;
     }
 
@@ -23,7 +23,7 @@ class ApiException extends Exception
         return [
             'success' => false,
             'message' => $this->getMessage(),
-            'code' => $this->getCode(),
+            'code' => $this->getStatusCode(),
         ];
     }
 }

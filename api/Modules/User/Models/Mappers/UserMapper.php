@@ -128,7 +128,7 @@ class UserMapper
         $stmt->execute();
         $recentId = $this->pdo->lastInsertId();
 
-        return self::findById(new UserId($recentId));
+        return $this->findById(new UserId($recentId));
     }
 
     public function getUser(User $user): ?User
@@ -149,14 +149,13 @@ class UserMapper
     {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE deleted = 0");
         $stmt->execute();
-
         $rows  = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $users = [];
+        $userCollection = new UserCollection();
         foreach ($rows as $row) {
-            $users[] = UserHydrator::hydrateForCollection($row);
+            $userCollection->add(UserHydrator::hydrateForCollection($row));
         }
 
-        return UserHydrator::hydrateListOfCollections($users);
+        return $userCollection;
     }
 
     public function getUsersWithParam(UserSearchFilter $filter): UserCollection
@@ -208,11 +207,12 @@ class UserMapper
 
         $rows  = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $users = [];
+        $userCollection = new UserCollection();
         foreach ($rows as $row) {
-            $users[] = UserHydrator::hydrateForCollection($row);
+            $userCollection->add(UserHydrator::hydrateForCollection($row));
         }
 
-        return UserHydrator::hydrateListOfCollections($users);
+        return $userCollection;
     }
 
     public function findByEmail(User $user): ?User

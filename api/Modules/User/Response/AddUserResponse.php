@@ -24,7 +24,7 @@ class AddUserResponse{
         self::json([
             'success' => false,
             'message' => $message
-        ], 200);
+        ], 400);
 
     }
 
