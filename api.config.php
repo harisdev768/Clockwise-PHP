@@ -20,11 +20,21 @@ use App\Modules\Login\Requests\CookieRequest;
 use App\Modules\Login\Requests\LoginRequest;
 use App\Modules\Login\Services\JWTService;
 use App\Modules\TimeSheet\Exceptions\TimeSheetException;
+use App\Modules\TimeClock\Requests\ClockRequest;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
 use App\Modules\User\Factories\GetMetaFactory;
 use App\Modules\User\Factories\GetUsersFactory;
 use App\Modules\User\Factories\EditUserFactory;
+use App\Modules\TimeClock\Factories\ClockInFactory;
+use App\Modules\TimeClock\Factories\ClockOutFactory;
+use App\Modules\TimeClock\Factories\StartBreakFactory;
+use App\Modules\TimeClock\Factories\EndBreakFactory;
+use App\Modules\TimeClock\Exceptions\ClockInException;
+use App\Modules\TimeClock\Factories\ClockStatusFactory;
+use App\Modules\TimeClock\Exceptions\ClockStatusException;
+use \App\Modules\TimeClock\Exceptions\NotesException;
+use App\Modules\TimeClock\Factories\AddNoteFactory;
 use App\Modules\User\Exceptions\MetaException;
 use App\Modules\TimeSheet\Factories\GetTimeSheetFactory;
 use App\Modules\TimeSheet\Factories\TimeSheetApprovalFactory;
@@ -42,6 +52,12 @@ $container->bind(JWTFactory::class, fn() => new JWTFactory($container));
 $container->bind(AddUserFactory::class, fn() => new AddUserFactory($container));
 $container->bind(GetUsersFactory::class, fn() => new GetUsersFactory($container));
 $container->bind(EditUserFactory::class, fn() => new EditUserFactory($container));
+$container->bind(ClockInFactory::class, fn() => new ClockInFactory($container));
+$container->bind(ClockOutFactory::class, fn() => new ClockOutFactory($container));
+$container->bind(StartBreakFactory::class, fn() => new StartBreakFactory($container));
+$container->bind(EndBreakFactory::class, fn() => new EndBreakFactory($container));
+$container->bind(ClockStatusFactory::class, fn() => new ClockStatusFactory($container));
+$container->bind(AddNoteFactory::class, fn() => new AddNoteFactory($container));
 $container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
 $container->bind(GetTimeSheetFactory::class, fn() => new GetTimeSheetFactory($container));
 $container->bind(TimeSheetApprovalFactory::class, fn() => new TimeSheetApprovalFactory($container));
@@ -65,7 +81,6 @@ $container->bind(ForgotPasswordRequest::class, fn() => new ForgotPasswordRequest
 
 $container->bind(AuthMiddleware::class, fn() => new AuthMiddleware());
 
-// Middleware-style functions
 function handleLogin()
 {
     $request = Container::getInstance()->get(Request::class);
@@ -81,15 +96,10 @@ function handleLogin()
 
         Container::getInstance()->get(LoginFactory::class)->handleRequest($data);
     } catch (\Throwable $e) {
-        // Set proper HTTP code
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
 
-        // Return a JSON response
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 
 }
@@ -108,8 +118,8 @@ function handleAddUser()
                 empty(trim($data['first_name'])) ||
                 empty(trim($data['last_name'])) ||
                 empty(trim($data['email'])) ||
-                empty(trim($data['username'])) ||
-                empty(trim($data['password'])) ||
+                empty($data['username']) ||
+                empty($data['password']) ||
                 empty(trim($data['role_id']))
             ) {
                 throw UserException::missingCredentials();
@@ -123,27 +133,23 @@ function handleAddUser()
                 throw UserException::passwordFormat();
             }
 
-            // Call the factory
             $container->get(AddUserFactory::class)->handle($data);
         } else {
             throw UserException::notAllowed();
         }
     } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 }
 
 function handleLogout()
 {
     setcookie('jwt', '', [
-        'expires' => time() - 3600,  // Expire in the past
+        'expires' => time() - 3600,
         'path' => '/',
-        'domain' => 'localhost',     // EXACT same as when set
+        'domain' => 'localhost',
         'secure' => false,
         'httponly' => true,
         'samesite' => 'Lax',
@@ -206,15 +212,14 @@ function handleGetUsers()
 
 }
 
-function handleGetMeta()
-{
+function handleGetMeta(){
 
     $middleware = Container::getInstance()->get(AuthMiddleware::class);
 
     if ($middleware->handle('get_meta')) {
         $container = Container::getInstance();
         $container->get(GetMetaFactory::class)->handle();
-    } else {
+    }else{
 
         throw MetaException::notAllowed();
 
@@ -250,14 +255,134 @@ function handleEditUser($userId)
 
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code((int)($e->getCode() ?: 500));
+        http_response_code((int)($e->getStatusCode() ?: 500));
         header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ]);
+        Response::error($e->getMessage());
     }
 
+}
+
+function handleClock()
+{
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('clock_update')) {
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+
+            if (empty($data['user_id'])) {
+                throw ClockInException::userIdMissing();
+            }
+            if (empty($data['action'])) {
+                throw ClockInException::userActionMissing();
+            }
+
+            if ($data['action'] === 'in') {
+                $factory = Container::getInstance()->get(ClockInFactory::class);
+                $factory->handleClockIn($data);
+            } else if ($data['action'] === 'out') {
+                $factory = Container::getInstance()->get(ClockOutFactory::class);
+                $factory->handleClockOut($data);
+            }
+        }
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code($e->getStatusCode() ?: 500);
+        header('Content-Type: application/json');
+        Response::error($e->getMessage());
+    }
+
+}
+
+function handleBreak()
+{
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('break_update')) {
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+
+            if (empty($data['user_id'])) {
+                throw ClockInException::userIdMissing();
+            }
+            if (empty($data['action'])) {
+                throw ClockInException::userActionMissing();
+            }
+
+            if ($data['action'] === 'start') {
+                $factory = Container::getInstance()->get(StartBreakFactory::class);
+                $factory->handleStartBreak($data);
+            } else if ($data['action'] === 'end') {
+                $factory = Container::getInstance()->get(EndBreakFactory::class);
+                $factory->handleEndBreak($data);
+            }
+        }
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code($e->getStatusCode() ?: 500);
+        header('Content-Type: application/json');
+        Response::error($e->getMessage());
+    }
+}
+
+function handleClockStatus()
+{
+
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('clock_status')) {
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+
+            if (empty($data['user_id'])) {
+                throw ClockStatusException::userIdMissing();
+            }
+
+            $container = Container::getInstance();
+            $response = $container->get(ClockStatusFactory::class)->handle($data);
+        }
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code($e->getStatusCode() ?: 500);
+        header('Content-Type: application/json');
+        Response::error($e->getMessage());
+    }
+
+}
+
+function handleAddNote()
+{
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('add_note')) {
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+
+            if (empty($data['clock_id'])) {
+                throw NotesException::notClockedIn();
+            }
+            if (empty($data['user_id'])) {
+                throw NotesException::userIdMissing();
+            }
+            if (empty($data['note'])) {
+                throw NotesException::notesEmpty();
+            }
+            if (strlen($data['note']) > 512) {
+                throw NotesException::notesTooLong();
+            }
+            $container = Container::getInstance();
+            $container->get(AddNoteFactory::class)->handleAddNotes($data);
+        }
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code($e->getStatusCode() ?: 500);
+        header('Content-Type: application/json');
+        Response::error($e->getMessage());
+    }
 }
 
 function handleGetTimesheet()

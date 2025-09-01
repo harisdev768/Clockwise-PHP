@@ -13,7 +13,7 @@ class JWTService {
     public function __construct() {
         $this->secret = 'loc@lhost';
         $this->algo = 'HS256';
-        $this->expiry = 3600; // 1 hour
+        $this->expiry = 3600;
     }
 
     public function generateToken(array $payload): string {

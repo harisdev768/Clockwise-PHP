@@ -14,21 +14,18 @@ class Request {
             $decoded = json_decode($raw, true);
             $this->data = is_array($decoded) ? $decoded : [];
         } else {
-            // fallback to standard $_POST or $_GET
             $this->data = $_POST ?: $_GET;
         }
     }
 
-    //Get all request data
     public function all(): array {
         return $this->data;
     }
     public function addUserId($id) {
-        $this->data["user_id"] = $id; // Modifies the object's internal data
-        return $this->data; // Returns the modified internal data
+        $this->data["user_id"] = $id;
+        return $this->data;
     }
 
-    //Get specific key
     public function get(string $key, mixed $default = null): mixed {
         return $this->data[$key] ?? $default;
     }

@@ -1,5 +1,4 @@
 <?php
-// Utilities/Mailer.php
 
 namespace App\Modules\ForgotPassword\Utilities;
 

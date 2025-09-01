@@ -14,8 +14,7 @@ class Router
     public function dispatch(string $method, string $uri): void
     {
         $method = strtoupper($method);
-        $uri = parse_url($uri, PHP_URL_PATH); // Remove query strings
-
+        $uri = parse_url($uri, PHP_URL_PATH);
         if (isset($this->routes[$method][$uri])) {
             call_user_func($this->routes[$method][$uri]);
         } else {
