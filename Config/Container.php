@@ -25,11 +25,9 @@ class Container {
     }
 
     public function get(string $class): object {
-        // If already bound, return it
         if (isset($this->bindings[$class])) {
             $bound = $this->bindings[$class];
 
-            // If it's a closure, call it
             if (is_callable($bound)) {
                 return $bound($this);
             }

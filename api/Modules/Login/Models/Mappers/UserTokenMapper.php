@@ -12,12 +12,10 @@ class UserTokenMapper {
     }
 
     public function saveToken(int $userId, string $token, int $expirySeconds = 3600): void {
-        // Use UTC for consistency across systems
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         $issuedAt  = $now->format('Y-m-d H:i:s');
         $expiresAt = $now->modify('+' . $expirySeconds . ' seconds')->format('Y-m-d H:i:s');
 
-        // Check if token already exists for this user
         $stmt = $this->pdo->prepare("
             SELECT token_id 
             FROM user_tokens 

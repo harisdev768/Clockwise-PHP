@@ -4,8 +4,8 @@ namespace App\Modules\TimeClock\Models;
 use DateTimeImmutable;
 
 class Note {
-    private int $userId;
-    private int $clockId;
+    private ?int $userId = null;
+    private ?int $clockId = null;
     private ?int $noteId = null;
     private ?string $note = null;
 
@@ -22,8 +22,8 @@ class Note {
 
     }
 
-    public function getUserId(): int { return $this->userId; }
-    public function setUserId(int $id): void { $this->userId = $id; }
+    public function getUserId(): ?int { return $this->userId; }
+    public function setUserId(?int $id): void { $this->userId = $id; }
 
     public function getClockId(): ?int { return $this->clockId; }
     public function setClockId(?int $id): void { $this->clockId = $id; }

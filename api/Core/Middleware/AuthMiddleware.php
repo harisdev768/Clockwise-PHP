@@ -49,14 +49,13 @@ class AuthMiddleware
         $role = $decoded['role'];
 
         if (!isset($this->permissions['roles'][$role])) {
-            throw UserException::roleNotFound(); // Role not found
+            throw UserException::roleNotFound();
         }
 
         if (!in_array($requiredPermission, $this->permissions['roles'][$role]['permissions'])) {
-            throw UserException::notAllowed(); // Permission denied
+            throw UserException::notAllowed();
         }
 
-        // Auth + permission OK → proceed
         return true;
     }
 }

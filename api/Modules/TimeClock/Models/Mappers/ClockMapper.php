@@ -42,7 +42,7 @@ class ClockMapper {
 
         $stmt->execute();
 
-        return self::getClockById($clock);
+        return $this->getClockById($clock);
     }
 
     public function getLastUnclosedEntry(Clock $clock): ?Clock {

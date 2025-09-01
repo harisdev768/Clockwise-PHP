@@ -24,14 +24,14 @@ class User
     private ?UserJobRole $jobRole;
     private ?UserDepartment $department;
 
-    public function userExists(): bool{ //
+    public function userExists(): bool{
         if( empty($this->id) ) {
             return false;
         } else{
             return true;
         }
     }
-    public function userRequiredInfo(): bool{ //
+    public function userRequiredInfo(): bool{
         if( empty($this->firstName) ||
             empty($this->lastName) ||
             empty($this->email) ||

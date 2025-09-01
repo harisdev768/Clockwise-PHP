@@ -3,7 +3,6 @@ namespace App\Modules\TimeClock\Services;
 
 use App\Modules\TimeClock\Models\BreakTime;
 use App\Modules\TimeClock\Models\Mappers\BreakMapper;
-use App\Modules\TimeClock\Response\StartBreakResponse;
 
 class BreakService {
     private BreakMapper $mapper;

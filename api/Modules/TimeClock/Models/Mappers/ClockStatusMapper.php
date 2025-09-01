@@ -33,7 +33,7 @@ class ClockStatusMapper
         $clock = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$clock) {
-            return new ClockStatus(); // no clock found
+            return new ClockStatus();
         }
 
         return ClockStatusHydrator::hydrateClock($clock, $status);

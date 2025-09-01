@@ -24,11 +24,10 @@ class ForgotPasswordException extends Exception
         return [
             'success' => false,
             'message' => $this->getMessage(),
-            'code' => $this->getCode(),
+            'code' => $this->getStatusCode(),
         ];
     }
 
-    // Methods for specific login errors
 
     public static function missingEmail(): self
     {

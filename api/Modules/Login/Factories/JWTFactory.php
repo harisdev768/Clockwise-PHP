@@ -18,6 +18,6 @@ class JWTFactory
     public function handleJWT(string $token)
     {
         $controller = $this->container->get(JWTController::class);
-        $controller->authenticate($token); //validate call to controller
+        $controller->authenticate($token);
     }
 }

@@ -5,7 +5,7 @@ use App\Modules\TimeClock\Models\Collections\BreakCollection;
 use App\Modules\TimeClock\Models\Collections\NoteCollection;
 
 class ClockStatus {
-    private int $userId;
+    private ?int $userId = null;
     private ?string $clockInTime = null;
     private ?string $clockOutTime = null;
     private ?string $breakStart = null;
@@ -57,11 +57,11 @@ class ClockStatus {
     public function setClocked(bool $clocked): void{ $this->clocked = $clocked; }
     public function getClocked() : bool{ return $this->clocked; }
 
-    public function getUserId(): int { return $this->userId; }
-    public function setUserId(int $id): void { $this->userId = $id; }
+    public function getUserId(): ?int { return $this->userId; }
+    public function setUserId(?int $id): void { $this->userId = $id; }
 
-    public function getClockId(): int{ return $this->clockId; }
-    public function setClockId(int $id): void { $this->clockId = $id; }
+    public function getClockId(): ?int{ return $this->clockId; }
+    public function setClockId(?int $id): void { $this->clockId = $id; }
 
     public function getClockInTime(): ?string { return $this->clockInTime; }
     public function setClockInTime(?string $time): void { $this->clockInTime = $time; }

@@ -45,7 +45,7 @@ class BreakMapper {
 
         $stmt->execute();
 
-        return self::getBreakById($break);
+        return $this->getBreakById($break);
     }
 
     public function getLastUnclosedEntry(BreakTime $break): ?BreakTime {

@@ -128,7 +128,7 @@ class UserMapper
         $stmt->execute();
         $recentId = $this->pdo->lastInsertId();
 
-        return self::findById(new UserId($recentId));
+        return $this->findById(new UserId($recentId));
     }
 
     public function getUser(User $user): ?User

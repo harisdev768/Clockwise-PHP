@@ -75,7 +75,6 @@ $container->bind(ForgotPasswordRequest::class, fn() => new ForgotPasswordRequest
 
 $container->bind(AuthMiddleware::class, fn() => new AuthMiddleware());
 
-// Middleware-style functions
 function handleLogin()
 {
     $request = Container::getInstance()->get(Request::class);
@@ -91,10 +90,8 @@ function handleLogin()
 
         Container::getInstance()->get(LoginFactory::class)->handleRequest($data);
     } catch (\Throwable $e) {
-        // Set proper HTTP code
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
 
-        // Return a JSON response
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
@@ -130,13 +127,12 @@ function handleAddUser()
                 throw UserException::passwordFormat();
             }
 
-            // Call the factory
             $container->get(AddUserFactory::class)->handle($data);
         } else {
             throw UserException::notAllowed();
         }
     } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
@@ -145,9 +141,9 @@ function handleAddUser()
 function handleLogout()
 {
     setcookie('jwt', '', [
-        'expires' => time() - 3600,  // Expire in the past
+        'expires' => time() - 3600,
         'path' => '/',
-        'domain' => 'localhost',     // EXACT same as when set
+        'domain' => 'localhost',
         'secure' => false,
         'httponly' => true,
         'samesite' => 'Lax',
@@ -253,7 +249,7 @@ function handleEditUser($userId)
 
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code((int)($e->getCode() ?: 500));
+        http_response_code((int)($e->getStatusCode() ?: 500));
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
@@ -286,7 +282,7 @@ function handleClock()
         }
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
@@ -319,7 +315,7 @@ function handleBreak()
         }
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
@@ -344,7 +340,7 @@ function handleClockStatus()
         }
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
@@ -377,7 +373,7 @@ function handleAddNote()
         }
         throw UserException::notAllowed();
     } catch (\Exception $e) {
-        http_response_code($e->getCode() ?: 500);
+        http_response_code($e->getStatusCode() ?: 500);
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }

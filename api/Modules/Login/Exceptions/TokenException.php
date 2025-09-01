@@ -9,7 +9,7 @@ class TokenException extends Exception
 
     public function __construct(string $message = "Bad Request", int $statusCode = 400)
     {
-        parent::__construct($message);
+        parent::__construct($message,$statusCode);
         $this->statusCode = $statusCode;
         http_response_code($this->statusCode);
     }
@@ -24,11 +24,10 @@ class TokenException extends Exception
         return [
             'success' => false,
             'message' => $this->getMessage(),
-            'code' => $this->getCode(),
+            'code' => $this->getStatusCode(),
         ];
     }
 
-    // Methods for specific login errors
 
     public static function missingToken(): self
     {

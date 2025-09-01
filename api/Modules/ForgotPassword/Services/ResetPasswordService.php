@@ -1,5 +1,4 @@
 <?php
-// Modules/ForgotPassword-2/Services/ResetPasswordService.php
 
 namespace App\Modules\ForgotPassword\Services;
 
