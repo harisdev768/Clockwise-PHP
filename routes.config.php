@@ -17,3 +17,5 @@ $router->add('POST', '/break', fn() => handleBreak());
 $router->add('GET', '/clock/status', fn() => handleClockStatus());
 $router->add('POST', '/add-note', fn() => handleAddNote());
 $router->add('GET','/get-meta', fn() => handleGetMeta());
+$router->add('GET', '/get-timesheet', fn() => handleGetTimesheet());
+$router->add('POST', '/timesheet-status', fn() => handleTimesheetApproval());

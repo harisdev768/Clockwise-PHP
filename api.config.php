@@ -1,4 +1,5 @@
 <?php
+
 use App\Config\Container;
 use App\Core\Exceptions\ApiException;
 use App\Core\Http\Request;
@@ -18,6 +19,7 @@ use App\Modules\Login\Models\Mappers\UserTokenMapper;
 use App\Modules\Login\Requests\CookieRequest;
 use App\Modules\Login\Requests\LoginRequest;
 use App\Modules\Login\Services\JWTService;
+use App\Modules\TimeSheet\Exceptions\TimeSheetException;
 use App\Modules\TimeClock\Requests\ClockRequest;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Factories\AddUserFactory;
@@ -34,6 +36,8 @@ use App\Modules\TimeClock\Exceptions\ClockStatusException;
 use \App\Modules\TimeClock\Exceptions\NotesException;
 use App\Modules\TimeClock\Factories\AddNoteFactory;
 use App\Modules\User\Exceptions\MetaException;
+use App\Modules\TimeSheet\Factories\GetTimeSheetFactory;
+use App\Modules\TimeSheet\Factories\TimeSheetApprovalFactory;
 
 $container ??= Container::getInstance();
 
@@ -55,6 +59,8 @@ $container->bind(EndBreakFactory::class, fn() => new EndBreakFactory($container)
 $container->bind(ClockStatusFactory::class, fn() => new ClockStatusFactory($container));
 $container->bind(AddNoteFactory::class, fn() => new AddNoteFactory($container));
 $container->bind(GetMetaFactory::class, fn() => new GetMetaFactory($container));
+$container->bind(GetTimeSheetFactory::class, fn() => new GetTimeSheetFactory($container));
+$container->bind(TimeSheetApprovalFactory::class, fn() => new TimeSheetApprovalFactory($container));
 
 // Mappers
 $container->bind(UserMapper::class, fn() => new UserMapper($container->get(PDO::class)));
@@ -377,4 +383,60 @@ function handleAddNote()
         header('Content-Type: application/json');
         Response::error($e->getMessage());
     }
+}
+
+function handleGetTimesheet()
+{
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('get_timesheet')) {
+            $container = Container::getInstance();
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+            $container->get(GetTimeSheetFactory::class)->handle($data);
+        }
+
+        throw UserException::notAllowed();
+
+    } catch (\Exception $e) {
+        http_response_code((int)($e->getCode() ?: 500));
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
+}
+
+function handleTimesheetApproval()
+{
+    try {
+        $middleware = Container::getInstance()->get(AuthMiddleware::class);
+
+        if ($middleware->handle('get_timesheet')) {
+            $container = Container::getInstance();
+            $request = Container::getInstance()->get(Request::class);
+            $data = $request->all();
+            $id = $data['id'] ?? null;
+            $status = $data['status'] ?? null;
+            if (!$id) {
+                throw TimeSheetException::clockIdMissing();
+            }
+            if ($status === null) {
+                throw TimeSheetException::timeSheetStatusMissing();
+            }
+
+            $container->get(TimeSheetApprovalFactory::class)->handle($data);
+        }
+        throw UserException::notAllowed();
+    } catch (\Exception $e) {
+        http_response_code((int)($e->getCode() ?: 500));
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ]);
+    }
+
 }

@@ -11,6 +11,8 @@ return [
                 'clock_status',
                 'add_note',
                 'get_meta',
+                'get_timesheet',
+                'approve_timesheet',
             ],
         ],
         'Employee' => [
@@ -32,5 +34,7 @@ return [
         'clock_status',
         'add_note',
         'get_meta',
+        'get_timesheet',
+        'approve_timesheet',
     ],
 ];
